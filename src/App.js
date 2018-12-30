@@ -13,7 +13,7 @@ import './App.css';
 //  - enter date/time (check weather)
 //  - how close should it be (based on driving time at the date/time specified, walking time) OR where should it be
 //  - suggest indoor/outdoor but give option to change
-//  - list of highest rated, relevant activities shown, pref with snippet/photo to explain what it is
+//  - list of highest rated (create method for this), open, relevant activities shown, pref with snippet/photo to explain what it is
 //  - include coffee, lunch and dinner recommendations as appropriate
 //  - ability to decline individual recommendations, which then get replaced by another
 //  - ability to click on acitivty to be taken to website or detailed Google Maps listing for it
@@ -64,11 +64,12 @@ class App extends Component {
         } 
         this.setState({ map: new google.maps.Map(this.mapElement, mapConfig) })
       })
-      .then(() => this.state.map.addListener('center_changed', console.log('fired'))) // this.centerChanged()
+      .then(() => this.state.map.addListener('center_changed', () => console.log('Center Moved') )) // this.centerChanged()
       .then(() => this.refreshNearbyPlaces() )
-      .then((placesNamesAndRatings) => { this.placesElement.innerText = placesNamesAndRatings })
+      .then((placesNamesAndRatings) => { 
+        this.placesElement.innerHTML = (placesNamesAndRatings.map(place => `<br>${place.name}: ${place.rating}`)).join('') // .join('') removes trailing comma
+      })
       .catch((error) => { console.log(error) })
-  
   }
 
   getCurrentLocation() {
@@ -97,15 +98,12 @@ class App extends Component {
     }
     
     const service = new google.maps.places.PlacesService(this.state.map)
-    let placeNamesAndRatings = []
 
     return new Promise((resolve, reject) => {
       return Promise.resolve(service.nearbySearch(request, (placesArray, status) => {
         if (status === google.maps.places.PlacesServiceStatus.OK) {
           console.log('Places Service status: ok')
-          placeNamesAndRatings = placesArray.map(element => `<br>${element.name}: ${element.rating}`)
-          console.log(placeNamesAndRatings)
-          resolve(placeNamesAndRatings)
+          resolve(placesArray)
         }
       }))
     })  

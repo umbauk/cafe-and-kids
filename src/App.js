@@ -2,6 +2,22 @@ import React, { Component } from 'react';
 import './App.css';
 /* global google */
 
+// To do:
+// format places
+// Move map and places refreshes based on new center
+// add search text box to search for place to act as new center
+// return highly-rated, kid friendly cafes
+// return highly-rated playgrounds / playcentres / parks for kids
+// Add user-journey: 
+//  - enter ages of children
+//  - enter date/time (check weather)
+//  - how close should it be (based on driving time at the date/time specified, walking time) OR where should it be
+//  - suggest indoor/outdoor but give option to change
+//  - list of highest rated, relevant activities shown, pref with snippet/photo to explain what it is
+//  - include coffee, lunch and dinner recommendations as appropriate
+//  - ability to decline individual recommendations, which then get replaced by another
+//  - ability to click on acitivty to be taken to website or detailed Google Maps listing for it
+
 
 function loadJS(src) {
   var ref = window.document.getElementsByTagName("script")[0];
@@ -19,11 +35,14 @@ class App extends Component {
       center: {
         lat: 37.774929,
         lng: -122.419416
-      }
+      },
+      map: {}
     }
 
     this.initMap = this.initMap.bind(this)
     this.getCurrentLocation = this.getCurrentLocation.bind(this)
+    this.refreshNearbyPlaces = this.refreshNearbyPlaces.bind(this)
+    this.centerChanged = this.centerChanged.bind(this)
   }
 
   componentDidMount() {
@@ -36,7 +55,6 @@ class App extends Component {
 
   initMap() {
     const zoom = 14
-    let map
 
     this.getCurrentLocation()
       .then((userCoords) => { 
@@ -44,8 +62,11 @@ class App extends Component {
           center: userCoords,
           zoom
         } 
-        map = new google.maps.Map(this.mapElement, mapConfig)
+        this.setState({ map: new google.maps.Map(this.mapElement, mapConfig) })
       })
+      .then(() => this.state.map.addListener('center_changed', console.log('fired'))) // this.centerChanged()
+      .then(() => this.refreshNearbyPlaces() )
+      .then((placesNamesAndRatings) => { this.placesElement.innerText = placesNamesAndRatings })
       .catch((error) => { console.log(error) })
   
   }
@@ -64,17 +85,42 @@ class App extends Component {
           resolve(currentCoordinates)
         }))
       }
-        //this.recenterMap()
-        //this.refreshNearbyPlaces()
-    
     })
+  }
+
+  refreshNearbyPlaces() {
+    const centerPoint = this.state.center
+    const request = {
+      location: centerPoint,
+      radius: '1000',
+      type: ['cafe']
+    }
+    
+    const service = new google.maps.places.PlacesService(this.state.map)
+    let placeNamesAndRatings = []
+
+    return new Promise((resolve, reject) => {
+      return Promise.resolve(service.nearbySearch(request, (placesArray, status) => {
+        if (status === google.maps.places.PlacesServiceStatus.OK) {
+          console.log('Places Service status: ok')
+          placeNamesAndRatings = placesArray.map(element => `<br>${element.name}: ${element.rating}`)
+          console.log(placeNamesAndRatings)
+          resolve(placeNamesAndRatings)
+        }
+      }))
+    })  
+  }
+
+  centerChanged() {
+    console.log('center changed: ' + this.state.map.getCenter())
   }
 
   render() {
     return (
-
-            <div ref={mapElement => (this.mapElement = mapElement) } style={{ height: '500px', width: '500px' }}/>
-     
+      <div>
+        <div ref={mapElement => (this.mapElement = mapElement) } style={{ height: '500px', width: '100%' }}/>
+        <div ref={placesElement => (this.placesElement = placesElement)} style={{ height: '500px', width: '100%' }}/>
+      </div>
     )
   }
 }

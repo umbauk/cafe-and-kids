@@ -2,9 +2,11 @@ import React, { Component } from 'react';
 import './App.css';
 /* global google */
 
+// Done:
+// Move map and places refreshes based on new center
+
 // To do:
 // format places: Name, location, snippet, rating (photo?), hyperlink
-// Move map and places refreshes based on new center
 // add search text box to search for place to act as new center
 // return highly-rated, kid friendly cafes and show markers on map
 // return highly-rated playgrounds / playcentres / parks for kids and show markers on map
@@ -70,8 +72,9 @@ class App extends Component {
       })
       .then(() => map.addListener('center_changed', this.centerChanged ))
       .then(() => this.refreshNearbyPlaces() )
-      .then((placesNamesAndRatings) => { 
-        this.placesElement.innerHTML = (placesNamesAndRatings.map(place => `<br>${place.name}: ${place.rating}`)).join('') // .join('') removes trailing comma
+      .then((placesNamesAndRatingsArray) => {
+        console.log('returned from refreshNearbyPlaces():' + placesNamesAndRatingsArray)
+        this.placesElement.innerHTML = placesNamesAndRatingsArray.map(placesArray => placesArray.map(place => `<br>${place.name}: ${place.rating}`).join('')) // .join('') removes trailing comma
       })
       .catch((error) => { console.log(error) })
   }
@@ -86,32 +89,48 @@ class App extends Component {
             lng: position.coords.longitude
           }
           this.setState({ center: currentCoordinates })
-          console.log(`pos: ${JSON.stringify(currentCoordinates)}`)
           resolve(currentCoordinates)
         }))
       }
     })
   }
 
-  refreshNearbyPlaces() {
+  async refreshNearbyPlaces() {
     const centerPoint = this.state.center
-    const request = {
+    const cafeRequest = {
       location: centerPoint,
       radius: '1000',
       type: ['cafe']
     }
+
+    const kidsActivityRequest = {
+      location: centerPoint,
+      radius: '1000',
+      type: ['park']
+    }
     
     const service = new google.maps.places.PlacesService(this.state.map)
 
+    const cafeList = this.getPlacesList(service, cafeRequest)
+    const kidsActivityList = this.getPlacesList(service, kidsActivityRequest)
+
+    const placesArray = [await cafeList, await kidsActivityList]
+    //console.log(placesArray)
+
+    return new Promise((resolve) => {
+      resolve(placesArray) 
+    })  
+  }
+
+  getPlacesList(service, request) {
     return new Promise((resolve, reject) => {
       return Promise.resolve(service.nearbySearch(request, (placesArray, status) => {
         if (status === google.maps.places.PlacesServiceStatus.OK) {
           console.log('Places Service status: ok')
-          console.log(placesArray[0])
           resolve(placesArray)
         }
       }))
-    })  
+    })
   }
 
   centerChanged() {

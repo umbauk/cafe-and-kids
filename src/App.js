@@ -4,9 +4,11 @@ import './App.css';
 
 // Done:
 // Move map and places refreshes based on new center
+//map over places geometry.location data to remove those outside of search radius
+// remove markers and enter new markers when dragging
 
 // To do:
-// convert center and radius to bounds to force results within a certain area
+// link markers and text and add new colour markers for cafes
 // format places: Name, location, snippet, rating (photo?), hyperlink
 // add search text box to search for place to act as new center
 // return highly-rated, kid friendly cafes and show markers on map
@@ -47,9 +49,12 @@ class App extends Component {
     this.initMap = this.initMap.bind(this)
     this.getCurrentLocation = this.getCurrentLocation.bind(this)
     this.refreshNearbyPlaces = this.refreshNearbyPlaces.bind(this)
-    this.centerChanged = this.centerChanged.bind(this)
+    this.refreshPlacesAndUpdateListings = this.refreshPlacesAndUpdateListings.bind(this)
     this.addMarker = this.addMarker.bind(this)
+    this.clearMarkers = this.clearMarkers.bind(this)
+    this.checkPlaceIsWithinRadius = this.checkPlaceIsWithinRadius.bind(this)
   }
+
 
   componentDidMount() {
     // Connect the initMap() function within this class to the global window context,
@@ -58,6 +63,7 @@ class App extends Component {
     // Asynchronously load the Google Maps script, passing in the callback reference
     loadJS('https://maps.googleapis.com/maps/api/js?key=AIzaSyBoKmshPxsNC3n5M88_BKq2I_IJgiVx47g&libraries=places&callback=initMap')
   }
+
 
   initMap() {
     const zoom = 14
@@ -74,19 +80,12 @@ class App extends Component {
 
       })
       .then(() => {
-        //map.addListener('center_changed', this.centerChanged )
-        map.addListener('dragend', this.centerChanged )
+        map.addListener('dragend', this.refreshPlacesAndUpdateListings )
       })
-      .then( this.centerChanged )
-      /*.then(() => this.refreshNearbyPlaces() )
-      .then((placesNamesAndRatingsArray) => {
-        //console.log('returned from refreshNearbyPlaces(0):' + placesNamesAndRatingsArray[0])
-        //console.log('returned from refreshNearbyPlaces(1):' + placesNamesAndRatingsArray[1])
-        this.cafeElement.innerHTML = placesNamesAndRatingsArray[0].map(place => `<br>${place.name}: ${place.rating}`).join('') // .join('') removes trailing comma
-        this.kidsActivityElement.innerHTML = placesNamesAndRatingsArray[1].map(place => `<br>${place.name}: ${place.rating}`).join('') // .join('') removes trailing comma
-      })*/
+      .then( this.refreshPlacesAndUpdateListings )
       .catch((error) => { console.log(error) })
   }
+
 
   getCurrentLocation() {
     return new Promise((resolve, reject) => {
@@ -104,34 +103,73 @@ class App extends Component {
     })
   }
 
+
+  refreshPlacesAndUpdateListings() {
+    const letterLabels = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+    let letterLabelIndex = 0
+    let numberLabel = 1
+    
+    this.setState({ 
+      center: { 
+        lat: this.state.map.getCenter().lat(),
+        lng: this.state.map.getCenter().lng()  
+      }
+    })
+    
+    this.refreshNearbyPlaces()
+    .then((placesNamesAndRatingsArray) => {
+      this.clearMarkers()
+      this.setState({
+        markers: []
+      })
+
+      this.cafeElement.innerHTML = placesNamesAndRatingsArray[0].map( place => {
+        let currentLetterLabel = letterLabels[letterLabelIndex++ % letterLabels.length]
+        this.addMarker(place.geometry.location, currentLetterLabel, "http://maps.google.com/mapfiles/ms/icons/red.png")
+        return `<br>${currentLetterLabel}: ${place.name} - ${place.rating}`
+      }
+      ).join('') // .join('') removes trailing comma
+
+      this.kidsActivityElement.innerHTML = placesNamesAndRatingsArray[1].map( place => {
+        let currentNumberLabel = numberLabel++
+        this.addMarker(place.geometry.location, currentNumberLabel.toString(), "http://maps.google.com/mapfiles/ms/icons/blue.png")
+        return `<br>${currentNumberLabel}: ${place.name} - ${place.rating}`
+      }
+      ).join('') // .join('') removes trailing comma
+    })
+  }
+
+
   async refreshNearbyPlaces() {
     const centerPoint = this.state.center
+    const searchRadius = '2000'
     const cafeRequest = {
       query: 'kid friendly coffee shop',
       location: centerPoint,
-      radius: '500',
-      type: ['cafe'],
+      radius: searchRadius,
+      //type: ['cafe'],
     }
 
     const kidsActivityRequest = {
       query: 'playground',
       location: centerPoint,
-      radius: '500',
-      type: ['park'],
+      radius: searchRadius,
+      //type: ['park'],
     }
     
     const service = new google.maps.places.PlacesService(this.state.map)
 
-    const cafeList = this.getPlacesList(service, cafeRequest)
-    const kidsActivityList = this.getPlacesList(service, kidsActivityRequest)
+    let cafeList = this.getPlacesList(service, cafeRequest)
+    let kidsActivityList = this.getPlacesList(service, kidsActivityRequest)
 
     const placesArray = [await cafeList, await kidsActivityList]
-    //console.log(placesArray)
+    const filteredPlacesArray = this.checkPlaceIsWithinRadius(centerPoint, searchRadius, placesArray)
 
     return new Promise((resolve) => {
-      resolve(placesArray) 
+      resolve(filteredPlacesArray) 
     })  
   }
+
 
   getPlacesList(service, request) {
     return new Promise((resolve, reject) => {
@@ -139,36 +177,48 @@ class App extends Component {
         if (status === google.maps.places.PlacesServiceStatus.OK) {
           console.log('Places Service status: ok')
           resolve(placesArray)
+        } else {
+          console.log(google.maps.places.PlacesServiceStatus)
         }
       }))
     })
   }
 
-  centerChanged() {
-    this.setState({ center: this.state.map.getCenter() })
-    
-    this.refreshNearbyPlaces()
-    .then((placesNamesAndRatingsArray) => { 
-      this.cafeElement.innerHTML = placesNamesAndRatingsArray[0].map(
-        place => {
-          this.addMarker(place.geometry.location)
-          return `<br>${place.name}: ${place.rating}`
-        }
-      ).join('') // .join('') removes trailing comma
-      this.kidsActivityElement.innerHTML = placesNamesAndRatingsArray[1].map(
-        place => `<br>${place.name}: ${place.rating}`
-      ).join('') // .join('') removes trailing comma
+  checkPlaceIsWithinRadius(centerPoint, searchRadius, placesArray) {
+    let filteredArray = []
+    const searchRadiusInLatDegrees = (parseInt(searchRadius) / 1000) / 111
+    const searchRadiusInLngDegrees = (parseInt(searchRadius) / 1000) / ( Math.cos(centerPoint.lat) * 111.32 )
+
+    placesArray.forEach( element => {
+      filteredArray.push(
+        element.filter( place => {
+          return (place.geometry.location.lat() < (centerPoint.lat + searchRadiusInLatDegrees)) &&
+            (place.geometry.location.lat() > (centerPoint.lat - searchRadiusInLatDegrees)) &&
+            (place.geometry.location.lng() > (centerPoint.lng + searchRadiusInLngDegrees)) &&
+            (place.geometry.location.lng() < (centerPoint.lng - searchRadiusInLngDegrees))
+        })
+      )
     })
+    return filteredArray
   }
 
-  addMarker(placeLocation) {
+
+  addMarker(placeLocation, label, icon) {
     let marker = new google.maps.Marker({
       position: placeLocation,
       map: this.state.map,
+      label: label,
+      icon: icon,
     })
     this.setState( prevState => ({
       markers: [...prevState.markers, marker]
     }))
+  }
+
+  clearMarkers() {
+    this.state.markers.forEach( marker => {
+      marker.setMap(null)
+    })
   }
 
   render() {

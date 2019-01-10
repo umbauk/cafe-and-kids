@@ -2,13 +2,7 @@ import React, { Component } from 'react';
 import './App.css';
 /* global google */
 
-// Done:
-// Move map and places refreshes based on new center
-//map over places geometry.location data to remove those outside of search radius
-// remove markers and enter new markers when dragging
-
 // To do:
-// link markers and text and add new colour markers for cafes
 // format places: Name, location, snippet, rating (photo?), hyperlink
 // add search text box to search for place to act as new center
 // return highly-rated, kid friendly cafes and show markers on map
@@ -23,6 +17,7 @@ import './App.css';
 //  - include coffee, lunch and dinner recommendations as appropriate
 //  - ability to decline individual recommendations, which then get replaced by another
 //  - ability to click on acitivty to be taken to website or detailed Google Maps listing for it
+// Redesign for mobile
 
 
 function loadJS(src) {
@@ -50,9 +45,10 @@ class App extends Component {
     this.getCurrentLocation = this.getCurrentLocation.bind(this)
     this.refreshNearbyPlaces = this.refreshNearbyPlaces.bind(this)
     this.refreshPlacesAndUpdateListings = this.refreshPlacesAndUpdateListings.bind(this)
-    this.addMarker = this.addMarker.bind(this)
+    this.addMarkers = this.addMarkers.bind(this)
     this.clearMarkers = this.clearMarkers.bind(this)
     this.checkPlaceIsWithinRadius = this.checkPlaceIsWithinRadius.bind(this)
+    this.getPlaceUrl = this.getPlaceUrl.bind(this)
   }
 
 
@@ -104,10 +100,7 @@ class App extends Component {
   }
 
 
-  refreshPlacesAndUpdateListings() {
-    const letterLabels = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-    let letterLabelIndex = 0
-    let numberLabel = 1
+  async refreshPlacesAndUpdateListings() {
     
     this.setState({ 
       center: { 
@@ -116,27 +109,27 @@ class App extends Component {
       }
     })
     
-    this.refreshNearbyPlaces()
-    .then((placesNamesAndRatingsArray) => {
-      this.clearMarkers()
-      this.setState({
-        markers: []
-      })
-
-      this.cafeElement.innerHTML = placesNamesAndRatingsArray[0].map( place => {
-        let currentLetterLabel = letterLabels[letterLabelIndex++ % letterLabels.length]
-        this.addMarker(place.geometry.location, currentLetterLabel, "http://maps.google.com/mapfiles/ms/icons/red.png")
-        return `<br>${currentLetterLabel}: ${place.name} - ${place.rating}`
-      }
-      ).join('') // .join('') removes trailing comma
-
-      this.kidsActivityElement.innerHTML = placesNamesAndRatingsArray[1].map( place => {
-        let currentNumberLabel = numberLabel++
-        this.addMarker(place.geometry.location, currentNumberLabel.toString(), "http://maps.google.com/mapfiles/ms/icons/blue.png")
-        return `<br>${currentNumberLabel}: ${place.name} - ${place.rating}`
-      }
-      ).join('') // .join('') removes trailing comma
+    let placesNamesAndRatingsArray = await this.refreshNearbyPlaces()
+    this.clearMarkers()
+    this.setState({ markers: [] })
+    let placeLabelsArray = this.addMarkers(placesNamesAndRatingsArray)
+    console.log(placeLabelsArray)
+    let placeUrlArray = await this.getPlaceUrl(placesNamesAndRatingsArray)
+    console.log(`placeUrlArray: ${placeUrlArray}`)
+    this.cafeElement.innerHTML = placesNamesAndRatingsArray[0].map( (place, index) => {
+      return `<br>${placeLabelsArray[index]}: <a href="${placeUrlArray[index]}">${place.name}</a> - ${place.rating}`
     })
+    
+
+     /* this.kidsActivityElement.innerHTML = placesNamesAndRatingsArray[1].map( async (place) => {
+        let currentNumberLabel = numberLabel++
+        this.addMarker(place.geometry.location, currentNumberLabel.toString(), "https://mts.googleapis.com/vt/icon/name=icons/spotlight/spotlight-waypoint-b.png&text=", "&psize=11&font=fonts/Roboto-Regular.ttf&color=ff333333&ax=44&ay=48&scale=1")
+        placeUrl = await this.getPlaceUrl(place.place_id) 
+        //console.log(`placeUrl in refreshPlacesAndUpdateListings: ${placeUrl}`)
+        return `<br>${currentNumberLabel}: <a href="${placeUrl}">${place.name}</a> - ${place.rating}`
+      }
+      ).join('') // .join('') removes trailing comma*/
+    
   }
 
 
@@ -203,21 +196,64 @@ class App extends Component {
   }
 
 
-  addMarker(placeLocation, label, icon) {
-    let marker = new google.maps.Marker({
-      position: placeLocation,
-      map: this.state.map,
-      label: label,
-      icon: icon,
+  addMarkers(placeLocationArray) {
+    let iconURL1 = "https://mts.googleapis.com/vt/icon/name=icons/spotlight/spotlight-waypoint-a.png&text=" 
+    let iconURL2 = "&psize=11&font=fonts/Roboto-Regular.ttf&color=ff333333&ax=44&ay=48&scale=1"
+    const letterLabels = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+    let letterLabelIndex = 0
+    let numberLabel = 0
+    let labelIsLetter = true
+    let label = ''
+    let usedLabels = []
+
+    placeLocationArray.forEach( (array) => {
+      array.forEach( (element) => {
+        if(labelIsLetter) {
+          label = letterLabels[letterLabelIndex++ % letterLabels.length]
+        } else {
+          label = numberLabel++
+        }
+        usedLabels.push(label)
+        
+        let marker = new google.maps.Marker({
+          position: element.geometry.location,
+          map: this.state.map,
+          icon: iconURL1 + label + iconURL2,
+        })
+        this.setState( prevState => ({
+          markers: [...prevState.markers, marker]
+        }))
+        
+      })
+      labelIsLetter = false
     })
-    this.setState( prevState => ({
-      markers: [...prevState.markers, marker]
-    }))
+    return usedLabels
   }
 
   clearMarkers() {
     this.state.markers.forEach( marker => {
       marker.setMap(null)
+    })
+  }
+
+  getPlaceUrl(cafeAndKidsActivitiesArray) {
+    let placeUrlArray = []
+    const service = new google.maps.places.PlacesService(this.state.map)
+
+    return new Promise( async (resolve, reject) => {
+      for (const placeArray of cafeAndKidsActivitiesArray) {
+        for (const place of placeArray) { 
+          await service.getDetails({ placeId: place.place_id, fields: ['url'] }, (place, status) => { 
+            console.log(status)
+            if (status === google.maps.places.PlacesServiceStatus.OK) {
+              console.log(place.url)
+              placeUrlArray.push(place.url)
+            }
+          })
+        }
+      }
+      console.log('finished')
+      return Promise.resolve(placeUrlArray)
     })
   }
 

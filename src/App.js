@@ -3,6 +3,7 @@ import './App.css';
 /* global google */
 
 // To do:
+// flatten places arrays and add type 'cafe' or 'kidsActivity' to identify what they are
 // format places: Name, location, snippet, rating (photo?), hyperlink
 // add search text box to search for place to act as new center
 // return highly-rated, kid friendly cafes and show markers on map
@@ -119,7 +120,7 @@ class App extends Component {
     console.log(placeLabelsArray)
     let placeUrlArray = await this.getPlaceUrl(placesNamesAndRatingsArray)
     await console.log('7) Writing to HTML')
-    //console.log(`placeUrlArray`)
+    console.log(`placeUrlArray`)
     //console.log(placeUrlArray[0])
     this.cafeElement.innerHTML = await this.getPlaceHtmlString(placeLabelsArray, placeUrlArray, placesNamesAndRatingsArray)
     
@@ -140,7 +141,7 @@ class App extends Component {
   getPlaceHtmlString(placeLabelsArray, placeUrlArray, placesNamesAndRatingsArray) {
     return Promise.resolve(
       placesNamesAndRatingsArray[0].map( (place, index) => {
-        return `<br>${placeLabelsArray[index]}: <a href="${placeUrlArray[index]}">${place.name}</a> - ${place.rating}`
+        return `<br>${placeLabelsArray[index]}: <a target="_blank" rel="noopener noreferrer" href="${placeUrlArray[index]}">${place.name}</a> - ${place.rating}`
       })
     )
   }
@@ -179,14 +180,15 @@ class App extends Component {
 
   getPlacesList(service, request) {
     return new Promise((resolve, reject) => {
-      return Promise.resolve(service.textSearch(request, (placesArray, status) => {
+        service.textSearch(request, (placesArray, status) => {
         if (status === google.maps.places.PlacesServiceStatus.OK) {
           console.log('Places Service status: ok')
           resolve(placesArray)
         } else {
           console.log(google.maps.places.PlacesServiceStatus)
+          resolve(google.maps.places.PlacesServiceStatus)
         }
-      }))
+      })
     })
   }
 
@@ -250,45 +252,47 @@ class App extends Component {
   }
 
   getPlaceUrl(cafeAndKidsActivitiesArray) {
-    //let placeUrlArray = await this.getUrlsFromGoogle(cafeAndKidsActivitiesArray)
     console.log('4) getPlaceUrl starting')
     const service = new google.maps.places.PlacesService(this.state.map)
     let placeUrlArray = []
 
-    //let sequence = Promise.resolve()
+    let promiseArray = cafeAndKidsActivitiesArray.map( placeArray => 
+      placeArray.map( 
+        (place) => {
+          return this.getUrlsFromGoogle(place, service)
+            .then( (placeUrl) => {
+              placeUrlArray.push(placeUrl)
+              return Promise.resolve(placeUrl)
+            })
+        }
+      )
+    )
+    console.log(...[...promiseArray])
+    console.log(promiseArray)
 
-      /*cafeAndKidsActivitiesArray.forEach( (placeArray) => {
-        placeArray.forEach( (place) => {*/
-    let promiseArray = cafeAndKidsActivitiesArray[0].map( (place) => {
-      return this.getUrlsFromGoogle(place, service)
-        .then( (placeUrl) => {
-          console.log('we got here')
-          return Promise.resolve(placeUrl)
-        })
+    // Promise.all() passes on only first returned value, which is Cafe array
+    return Promise.all(...promiseArray).then( (resultsArray) => {
+      //placeUrlArray.push(...resultsArray)
+      console.log('6) getPlaceUrl complete')
+      console.log(resultsArray)
+      console.log(placeUrlArray)
+      return Promise.resolve(placeUrlArray)
     })
-
-    //return new Promise( (resolve, reject) => {
-      return Promise.all(promiseArray).then( (resultsArray) => {
-        placeUrlArray.push(resultsArray)
-        console.log('6) getPlaceUrl complete')
-        console.log(placeUrlArray)
-        return Promise.resolve(placeUrlArray)
-      })
-    //})
   }
 
   getUrlsFromGoogle(place, service) {
     console.log('5) getUrlsFromGoogle starting...')
-      return new Promise((resolve, reject) => {
-        return Promise.resolve(service.getDetails({ placeId: place.place_id, fields: ['url'] }, (place, status) => {
-          if (status === google.maps.places.PlacesServiceStatus.OK) {
-            console.log('Places Service status: ok')
-            resolve(place.url)
-          } else {
-            console.log(google.maps.places.PlacesServiceStatus)
-          }
-        }))
+    return new Promise((resolve, reject) => {
+        service.getDetails({ placeId: place.place_id, fields: ['url'] }, (place, status) => {
+        if (status === google.maps.places.PlacesServiceStatus.OK) {
+          console.log('Places Service status: ok')
+          resolve(place.url)
+        } else {
+          console.log(status)
+          resolve('https://maps.google.com')
+        }
       })
+    })
   }
 
   render() {

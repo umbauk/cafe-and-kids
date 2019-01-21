@@ -3,7 +3,8 @@ import './App.css';
 /* global google */
 
 // To do:
-// flatten places arrays and add type 'cafe' or 'kidsActivity' to identify what they are
+// Places and urls don't match. Suggest adding urls to filteredPlaceArray and marker labels while you're at it
+// Deal with OVER_QUERY_LIMIT by delaying requests and retrying with delay if receive that error
 // format places: Name, location, snippet, rating (photo?), hyperlink
 // add search text box to search for place to act as new center
 // return highly-rated, kid friendly cafes and show markers on map
@@ -112,17 +113,14 @@ class App extends Component {
       }
     })
     
-    let placesNamesAndRatingsArray = await this.refreshNearbyPlaces()
+    let filteredPlacesArray = await this.refreshNearbyPlaces()
     this.clearMarkers()
     this.setState({ markers: [] })
-    let placeLabelsArray = this.addMarkers(placesNamesAndRatingsArray)
+    let placeLabelsArray = this.addMarkers(filteredPlacesArray)
     console.log('3) placeLabelsArray: ...')
-    console.log(placeLabelsArray)
-    let placeUrlArray = await this.getPlaceUrl(placesNamesAndRatingsArray)
+    let placeUrlArray = await this.getPlaceUrl(filteredPlacesArray)
     await console.log('7) Writing to HTML')
-    console.log(`placeUrlArray`)
-    //console.log(placeUrlArray[0])
-    this.cafeElement.innerHTML = await this.getPlaceHtmlString(placeLabelsArray, placeUrlArray, placesNamesAndRatingsArray)
+    this.cafeElement.innerHTML = await this.getPlaceHtmlString(placeLabelsArray, placeUrlArray, filteredPlacesArray)
     
     console.log('8) refreshPlacesAndUpdateListings finished')
     
@@ -138,14 +136,13 @@ class App extends Component {
     
   }
 
-  getPlaceHtmlString(placeLabelsArray, placeUrlArray, placesNamesAndRatingsArray) {
+  getPlaceHtmlString(placeLabelsArray, placeUrlArray, filteredPlacesArray) {
     return Promise.resolve(
-      placesNamesAndRatingsArray[0].map( (place, index) => {
+      filteredPlacesArray.map( (place, index) => {
         return `<br>${placeLabelsArray[index]}: <a target="_blank" rel="noopener noreferrer" href="${placeUrlArray[index]}">${place.name}</a> - ${place.rating}`
       })
     )
   }
-
 
   async refreshNearbyPlaces() {
     const centerPoint = this.state.center
@@ -155,6 +152,7 @@ class App extends Component {
       location: centerPoint,
       radius: searchRadius,
       //type: ['cafe'],
+      placeType: 'cafe',
     }
 
     const kidsActivityRequest = {
@@ -162,6 +160,7 @@ class App extends Component {
       location: centerPoint,
       radius: searchRadius,
       //type: ['park'],
+      placeType: 'kids activity'
     }
     
     const service = new google.maps.places.PlacesService(this.state.map)
@@ -170,8 +169,8 @@ class App extends Component {
     let kidsActivityList = this.getPlacesList(service, kidsActivityRequest)
 
     const placesArray = [await cafeList, await kidsActivityList]
-    const filteredPlacesArray = this.checkPlaceIsWithinRadius(centerPoint, searchRadius, placesArray)
-
+    const flattenedPlacesArray = [].concat(...placesArray)
+    const filteredPlacesArray = this.checkPlaceIsWithinRadius(centerPoint, searchRadius, flattenedPlacesArray)
     return new Promise((resolve) => {
       resolve(filteredPlacesArray) 
     })  
@@ -183,7 +182,11 @@ class App extends Component {
         service.textSearch(request, (placesArray, status) => {
         if (status === google.maps.places.PlacesServiceStatus.OK) {
           console.log('Places Service status: ok')
-          resolve(placesArray)
+          // Add the placeType (cafe or 'kids activity') to each entry in array
+          let returnArray = placesArray.map( element => {
+            return Object.assign(element, { placeType: request.placeType })
+          })
+          resolve(returnArray)
         } else {
           console.log(google.maps.places.PlacesServiceStatus)
           resolve(google.maps.places.PlacesServiceStatus)
@@ -193,55 +196,45 @@ class App extends Component {
   }
 
   checkPlaceIsWithinRadius(centerPoint, searchRadius, placesArray) {
-    let filteredArray = []
     const searchRadiusInLatDegrees = (parseInt(searchRadius) / 1000) / 111
     const searchRadiusInLngDegrees = (parseInt(searchRadius) / 1000) / ( Math.cos(centerPoint.lat) * 111.32 )
 
-    placesArray.forEach( element => {
-      filteredArray.push(
-        element.filter( place => {
-          return (place.geometry.location.lat() < (centerPoint.lat + searchRadiusInLatDegrees)) &&
-            (place.geometry.location.lat() > (centerPoint.lat - searchRadiusInLatDegrees)) &&
-            (place.geometry.location.lng() > (centerPoint.lng + searchRadiusInLngDegrees)) &&
-            (place.geometry.location.lng() < (centerPoint.lng - searchRadiusInLngDegrees))
-        })
-      )
+    return placesArray.filter( place => {
+      return (place.geometry.location.lat() < (centerPoint.lat + searchRadiusInLatDegrees)) &&
+        (place.geometry.location.lat() > (centerPoint.lat - searchRadiusInLatDegrees)) &&
+        (place.geometry.location.lng() > (centerPoint.lng + searchRadiusInLngDegrees)) &&
+        (place.geometry.location.lng() < (centerPoint.lng - searchRadiusInLngDegrees))
     })
-    return filteredArray
   }
 
 
-  addMarkers(placeLocationArray) {
+  addMarkers(filteredPlacesArray) {
     let iconURL1 = "https://mts.googleapis.com/vt/icon/name=icons/spotlight/spotlight-waypoint-a.png&text=" 
     let iconURL2 = "&psize=11&font=fonts/Roboto-Regular.ttf&color=ff333333&ax=44&ay=48&scale=1"
     const letterLabels = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
     let letterLabelIndex = 0
-    let numberLabel = 0
-    let labelIsLetter = true
+    let numberLabel = 1
     let label = ''
     let usedLabels = []
 
-    placeLocationArray.forEach( (array) => {
-      array.forEach( (element) => {
-        if(labelIsLetter) {
-          label = letterLabels[letterLabelIndex++ % letterLabels.length]
-        } else {
-          label = numberLabel++
-        }
-        usedLabels.push(label)
-        
-        let marker = new google.maps.Marker({
-          position: element.geometry.location,
-          map: this.state.map,
-          icon: iconURL1 + label + iconURL2,
-        })
-        this.setState( prevState => ({
-          markers: [...prevState.markers, marker]
-        }))
-        
+    filteredPlacesArray.forEach( (element) => {
+      if(element.placeType === 'cafe') {
+        label = letterLabels[letterLabelIndex++ % letterLabels.length]
+      } else {
+        label = numberLabel++
+      }
+      usedLabels.push(label)
+      
+      let marker = new google.maps.Marker({
+        position: element.geometry.location,
+        map: this.state.map,
+        icon: iconURL1 + label + iconURL2,
       })
-      labelIsLetter = false
+      this.setState( prevState => ({
+        markers: [...prevState.markers, marker]
+      }))
     })
+    
     return usedLabels
   }
 
@@ -251,31 +244,21 @@ class App extends Component {
     })
   }
 
-  getPlaceUrl(cafeAndKidsActivitiesArray) {
+  getPlaceUrl(filteredPlacesArray) {
     console.log('4) getPlaceUrl starting')
     const service = new google.maps.places.PlacesService(this.state.map)
     let placeUrlArray = []
 
-    let promiseArray = cafeAndKidsActivitiesArray.map( placeArray => 
-      placeArray.map( 
-        (place) => {
-          return this.getUrlsFromGoogle(place, service)
-            .then( (placeUrl) => {
-              placeUrlArray.push(placeUrl)
-              return Promise.resolve(placeUrl)
-            })
-        }
-      )
-    )
-    console.log(...[...promiseArray])
-    console.log(promiseArray)
+    let promiseArray = filteredPlacesArray.map( (place) => {
+      return this.getUrlsFromGoogle(place, service)
+        .then( (placeUrl) => {
+          placeUrlArray.push(placeUrl)
+          return Promise.resolve(placeUrl)
+        })
+    })
 
-    // Promise.all() passes on only first returned value, which is Cafe array
-    return Promise.all(...promiseArray).then( (resultsArray) => {
-      //placeUrlArray.push(...resultsArray)
+    return Promise.all(promiseArray).then( (resultsArray) => {
       console.log('6) getPlaceUrl complete')
-      console.log(resultsArray)
-      console.log(placeUrlArray)
       return Promise.resolve(placeUrlArray)
     })
   }
@@ -283,10 +266,10 @@ class App extends Component {
   getUrlsFromGoogle(place, service) {
     console.log('5) getUrlsFromGoogle starting...')
     return new Promise((resolve, reject) => {
-        service.getDetails({ placeId: place.place_id, fields: ['url'] }, (place, status) => {
+        service.getDetails({ placeId: place.place_id, fields: ['url'] }, (placeDetails, status) => {
         if (status === google.maps.places.PlacesServiceStatus.OK) {
           console.log('Places Service status: ok')
-          resolve(place.url)
+          resolve(placeDetails.url)
         } else {
           console.log(status)
           resolve('https://maps.google.com')

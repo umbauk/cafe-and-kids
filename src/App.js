@@ -3,7 +3,6 @@ import './App.css';
 /* global google */
 
 // To do:
-// Places and urls don't match. Suggest adding urls to filteredPlaceArray and marker labels while you're at it
 // Deal with OVER_QUERY_LIMIT by delaying requests and retrying with delay if receive that error
 // format places: Name, location, snippet, rating (photo?), hyperlink
 // add search text box to search for place to act as new center
@@ -116,31 +115,22 @@ class App extends Component {
     let filteredPlacesArray = await this.refreshNearbyPlaces()
     this.clearMarkers()
     this.setState({ markers: [] })
-    let placeLabelsArray = this.addMarkers(filteredPlacesArray)
+    let placeAndLabelsArray = this.addMarkers(filteredPlacesArray)
     console.log('3) placeLabelsArray: ...')
-    let placeUrlArray = await this.getPlaceUrl(filteredPlacesArray)
+    let placeLabelsAndUrlArray = await this.getPlaceUrl(placeAndLabelsArray)
     await console.log('7) Writing to HTML')
-    this.cafeElement.innerHTML = await this.getPlaceHtmlString(placeLabelsArray, placeUrlArray, filteredPlacesArray)
+    this.cafeElement.innerHTML = await this.getPlaceHtmlString(placeLabelsAndUrlArray.filter( element => element.placeType === 'cafe'))
+    this.kidsActivityElement.innerHTML = await this.getPlaceHtmlString(placeLabelsAndUrlArray.filter( element => element.placeType === 'kids activity'))
     
     console.log('8) refreshPlacesAndUpdateListings finished')
     
-
-     /* this.kidsActivityElement.innerHTML = placesNamesAndRatingsArray[1].map( async (place) => {
-        let currentNumberLabel = numberLabel++
-        this.addMarker(place.geometry.location, currentNumberLabel.toString(), "https://mts.googleapis.com/vt/icon/name=icons/spotlight/spotlight-waypoint-b.png&text=", "&psize=11&font=fonts/Roboto-Regular.ttf&color=ff333333&ax=44&ay=48&scale=1")
-        placeUrl = await this.getPlaceUrl(place.place_id) 
-        //console.log(`placeUrl in refreshPlacesAndUpdateListings: ${placeUrl}`)
-        return `<br>${currentNumberLabel}: <a href="${placeUrl}">${place.name}</a> - ${place.rating}`
-      }
-      ).join('') // .join('') removes trailing comma*/
-    
   }
 
-  getPlaceHtmlString(placeLabelsArray, placeUrlArray, filteredPlacesArray) {
+  getPlaceHtmlString(placeLabelsAndUrlArray) {
     return Promise.resolve(
-      filteredPlacesArray.map( (place, index) => {
-        return `<br>${placeLabelsArray[index]}: <a target="_blank" rel="noopener noreferrer" href="${placeUrlArray[index]}">${place.name}</a> - ${place.rating}`
-      })
+      placeLabelsAndUrlArray.map( (place, index) => {
+        return `<br>${place.label}: <a target="_blank" rel="noopener noreferrer" href="${place.url}">${place.name}</a> - ${place.rating}`
+      }).join('')
     )
   }
 
@@ -179,7 +169,7 @@ class App extends Component {
 
   getPlacesList(service, request) {
     return new Promise((resolve, reject) => {
-        service.textSearch(request, (placesArray, status) => {
+      service.textSearch(request, (placesArray, status) => {
         if (status === google.maps.places.PlacesServiceStatus.OK) {
           console.log('Places Service status: ok')
           // Add the placeType (cafe or 'kids activity') to each entry in array
@@ -209,21 +199,23 @@ class App extends Component {
 
 
   addMarkers(filteredPlacesArray) {
-    let iconURL1 = "https://mts.googleapis.com/vt/icon/name=icons/spotlight/spotlight-waypoint-a.png&text=" 
+    let greenIconURL1 = "https://mts.googleapis.com/vt/icon/name=icons/spotlight/spotlight-waypoint-a.png&text=" 
+    let redIconURL1 = "https://mts.googleapis.com/vt/icon/name=icons/spotlight/spotlight-waypoint-b.png&text=" 
     let iconURL2 = "&psize=11&font=fonts/Roboto-Regular.ttf&color=ff333333&ax=44&ay=48&scale=1"
     const letterLabels = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
     let letterLabelIndex = 0
     let numberLabel = 1
     let label = ''
-    let usedLabels = []
+    let iconURL1
 
-    filteredPlacesArray.forEach( (element) => {
+    let returnArray = filteredPlacesArray.map( (element) => {
       if(element.placeType === 'cafe') {
         label = letterLabels[letterLabelIndex++ % letterLabels.length]
+        iconURL1 = redIconURL1
       } else {
         label = numberLabel++
+        iconURL1 = greenIconURL1
       }
-      usedLabels.push(label)
       
       let marker = new google.maps.Marker({
         position: element.geometry.location,
@@ -233,9 +225,10 @@ class App extends Component {
       this.setState( prevState => ({
         markers: [...prevState.markers, marker]
       }))
+      return Object.assign(element, { label: label })
     })
-    
-    return usedLabels
+
+    return returnArray
   }
 
   clearMarkers() {
@@ -244,22 +237,20 @@ class App extends Component {
     })
   }
 
-  getPlaceUrl(filteredPlacesArray) {
+  getPlaceUrl(placeAndLabelsArray) {
     console.log('4) getPlaceUrl starting')
     const service = new google.maps.places.PlacesService(this.state.map)
-    let placeUrlArray = []
 
-    let promiseArray = filteredPlacesArray.map( (place) => {
+    let promiseArray = placeAndLabelsArray.map( (place) => {
       return this.getUrlsFromGoogle(place, service)
         .then( (placeUrl) => {
-          placeUrlArray.push(placeUrl)
-          return Promise.resolve(placeUrl)
+          return Promise.resolve( Object.assign( place, {url: placeUrl} ) )
         })
     })
 
     return Promise.all(promiseArray).then( (resultsArray) => {
       console.log('6) getPlaceUrl complete')
-      return Promise.resolve(placeUrlArray)
+      return Promise.resolve(resultsArray)
     })
   }
 

@@ -245,12 +245,12 @@ class App extends Component {
     let promiseArray = placeAndLabelsArray.map( (place) => {
       i++
       return new Promise((resolve, reject) => { 
-        setTimeout(
+        setTimeout( () => {
           this.getUrlsFromGoogle(place, service)
           .then( (placeUrl) => {
             resolve( Object.assign( place, {url: placeUrl} ) )
-          })
-        , 1000 * i)
+          })}
+        , 250 * i)
       })
     })
 

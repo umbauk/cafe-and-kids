@@ -3,6 +3,7 @@ import './App.css';
 /* global google */
 
 // To do:
+// setTimeout in getURl not working - don't know why
 // Deal with OVER_QUERY_LIMIT by delaying requests and retrying with delay if receive that error
 // format places: Name, location, snippet, rating (photo?), hyperlink
 // add search text box to search for place to act as new center
@@ -240,12 +241,17 @@ class App extends Component {
   getPlaceUrl(placeAndLabelsArray) {
     console.log('4) getPlaceUrl starting')
     const service = new google.maps.places.PlacesService(this.state.map)
-
+    let i = 0
     let promiseArray = placeAndLabelsArray.map( (place) => {
-      return this.getUrlsFromGoogle(place, service)
-        .then( (placeUrl) => {
-          return Promise.resolve( Object.assign( place, {url: placeUrl} ) )
-        })
+      i++
+      return new Promise((resolve, reject) => { 
+        setTimeout(
+          this.getUrlsFromGoogle(place, service)
+          .then( (placeUrl) => {
+            resolve( Object.assign( place, {url: placeUrl} ) )
+          })
+        , 1000 * i)
+      })
     })
 
     return Promise.all(promiseArray).then( (resultsArray) => {
@@ -258,14 +264,14 @@ class App extends Component {
     console.log('5) getUrlsFromGoogle starting...')
     return new Promise((resolve, reject) => {
         service.getDetails({ placeId: place.place_id, fields: ['url'] }, (placeDetails, status) => {
-        if (status === google.maps.places.PlacesServiceStatus.OK) {
-          console.log('Places Service status: ok')
-          resolve(placeDetails.url)
-        } else {
-          console.log(status)
-          resolve('https://maps.google.com')
-        }
-      })
+          if (status === google.maps.places.PlacesServiceStatus.OK) {
+            console.log('Places Service status: ok')
+            resolve(placeDetails.url)
+          } else {
+            console.log(status)
+            resolve('getDetails request failed')
+          }
+        })
     })
   }
 

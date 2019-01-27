@@ -4,6 +4,7 @@ import { getPlacesAndUpdateListings } from './api/getPlacesAndUpdateListings'
 /* global google */
 
 // To do:
+// when refreshing places, markers are not being cleared and new ones added
 // format places: Name, location, snippet, rating (photo?), hyperlink
 // add search text box to search for place to act as new center
 // return highly-rated, kid friendly cafes and show markers on map
@@ -44,6 +45,7 @@ class App extends Component {
 
     this.initMap = this.initMap.bind(this)
     this.getCurrentLocation = this.getCurrentLocation.bind(this)
+    this.getPlaceHtmlString = this.getPlaceHtmlString.bind(this)
   }
 
   componentDidMount() {
@@ -55,7 +57,7 @@ class App extends Component {
   }
 
   initMap() {
-    const zoom = 14
+    const zoom = 13
     let map = {}
 
     this.getCurrentLocation()
@@ -65,18 +67,19 @@ class App extends Component {
           zoom
         } 
         map = new google.maps.Map(this.mapElement, mapConfig)
-        this.setState({ map: map })
+        this.setState({ 
+          map: map,
+          center: { 
+            lat: map.getCenter().lat(),
+            lng: map.getCenter().lng()  
+          },
+         })
 
       })
       .then(() => {
-        map.addListener('dragend', getPlacesAndUpdateListings(this.state.map, this.state.center) )
-      })
-      .then( () => {
+        map.addListener('dragend', () => getPlacesAndUpdateListings(this.state.map, this.state.center) )
+
         this.setState({ 
-          center: { 
-            lat: this.state.map.getCenter().lat(),
-            lng: this.state.map.getCenter().lng()  
-          },
           markers: [],
         })
         
@@ -84,9 +87,28 @@ class App extends Component {
         this.state.markers.forEach( marker => {
           marker.setMap(null)
         })
+      })
+      .then( async () => {
+        let placeMarkersArray, placeLabelsAndUrlArray
+
+        ;[ placeLabelsAndUrlArray, placeMarkersArray ] = await getPlacesAndUpdateListings(this.state.map, this.state.center)
+        return [ placeLabelsAndUrlArray, placeMarkersArray ]
+      })
+      .then( ([ placeLabelsAndUrlArray, placeMarkersArray ]) => {
         
-        getPlacesAndUpdateListings(this.state.map, this.state.center) } )
+        this.setState( {
+          markers: [...placeMarkersArray]
+        })
+        this.cafeElement.innerHTML = this.getPlaceHtmlString(placeLabelsAndUrlArray.filter( element => element.placeType === 'cafe'))
+        this.kidsActivityElement.innerHTML = this.getPlaceHtmlString(placeLabelsAndUrlArray.filter( element => element.placeType === 'kids activity'))
+      })
       .catch((error) => { console.log(error) })
+  }
+
+  getPlaceHtmlString(placeLabelsAndUrlArray) {
+    return placeLabelsAndUrlArray.map( (place) => {
+      return `<br>${place.label}: <a target="_blank" rel="noopener noreferrer" href="${place.url}">${place.name}</a> - ${place.rating}`
+    }).join('')
   }
 
   getCurrentLocation() {

@@ -1,30 +1,18 @@
-// need to fix setState in addMarkers() - possibly by returning array of markers to App.js
-// need to fix setting of cafeElement and kidsActivityElement
-
-
 import { getPlaceUrl } from './getPlaceUrl.js'
 /* global google */
 
 export async function getPlacesAndUpdateListings(map, mapCenter) {
+  let placeAndLabelsArray, markerArray
   console.log('2) refreshPlacesAndUpdateListings starting...')
   
-  let filteredPlacesArray = await refreshNearbyPlaces(map, mapCenter)
-  let placeAndLabelsArray = addMarkers(filteredPlacesArray, map)
+  const filteredPlacesArray = await refreshNearbyPlaces(map, mapCenter);
+  [ placeAndLabelsArray, markerArray ] = addMarkers(filteredPlacesArray, map)
   console.log('3) placeLabelsArray: ...')
   let placeLabelsAndUrlArray = await getPlaceUrl(placeAndLabelsArray, map)
   await console.log('7) Writing to HTML')
-  this.cafeElement.innerHTML = await getPlaceHtmlString(placeLabelsAndUrlArray.filter( element => element.placeType === 'cafe'))
-  this.kidsActivityElement.innerHTML = await getPlaceHtmlString(placeLabelsAndUrlArray.filter( element => element.placeType === 'kids activity'))
   
   console.log('8) refreshPlacesAndUpdateListings finished')
-}
-
-function getPlaceHtmlString(placeLabelsAndUrlArray) {
-  return Promise.resolve(
-    placeLabelsAndUrlArray.map( (place, index) => {
-      return `<br>${place.label}: <a target="_blank" rel="noopener noreferrer" href="${place.url}">${place.name}</a> - ${place.rating}`
-    }).join('')
-  )
+  return [ placeLabelsAndUrlArray, markerArray ]
 }
 
 async function refreshNearbyPlaces(map, mapCenter) {
@@ -97,7 +85,8 @@ function addMarkers(filteredPlacesArray, map) {
   let letterLabelIndex = 0
   let numberLabel = 1
   let label = ''
-  let iconURL1
+  let iconURL1 = ''
+  let markerArray = []
 
   let returnArray = filteredPlacesArray.map( (element) => {
     if(element.placeType === 'cafe') {
@@ -113,13 +102,10 @@ function addMarkers(filteredPlacesArray, map) {
       map: map,
       icon: iconURL1 + label + iconURL2,
     })
-    this.setState( prevState => ({
-      markers: [...prevState.markers, marker]
-    }))
+    markerArray.push(marker)
+    
     return Object.assign(element, { label: label })
   })
-
-  return returnArray
+  return [returnArray, markerArray]
 }
-
 

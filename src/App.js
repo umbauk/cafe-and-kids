@@ -4,8 +4,7 @@ import { getPlacesAndUpdateListings } from './api/getPlacesAndUpdateListings'
 /* global google */
 
 // To do:
-// when refreshing places, markers are not being cleared and new ones added
-// format places: Name, location, snippet, rating (photo?), hyperlink
+// format places: location, snippet, (photo?)
 // add search text box to search for place to act as new center
 // return highly-rated, kid friendly cafes and show markers on map
 // return highly-rated playgrounds / playcentres / parks for kids and show markers on map
@@ -20,7 +19,6 @@ import { getPlacesAndUpdateListings } from './api/getPlacesAndUpdateListings'
 //  - ability to decline individual recommendations, which then get replaced by another
 //  - ability to click on acitivty to be taken to website or detailed Google Maps listing for it
 // Redesign for mobile
-
 
 function loadJS(src) {
   var ref = window.document.getElementsByTagName("script")[0];
@@ -46,6 +44,7 @@ class App extends Component {
     this.initMap = this.initMap.bind(this)
     this.getCurrentLocation = this.getCurrentLocation.bind(this)
     this.getPlaceHtmlString = this.getPlaceHtmlString.bind(this)
+    this.updateListings = this.updateListings.bind(this)
   }
 
   componentDidMount() {
@@ -61,9 +60,9 @@ class App extends Component {
     let map = {}
 
     this.getCurrentLocation()
-      .then((userCoords) => { 
+      .then((userLocationCoords) => { 
         let mapConfig = {
-          center: userCoords,
+          center: userLocationCoords,
           zoom
         } 
         map = new google.maps.Map(this.mapElement, mapConfig)
@@ -77,30 +76,8 @@ class App extends Component {
 
       })
       .then(() => {
-        map.addListener('dragend', () => getPlacesAndUpdateListings(this.state.map, this.state.center) )
-
-        this.setState({ 
-          markers: [],
-        })
-        
-        // clear markers
-        this.state.markers.forEach( marker => {
-          marker.setMap(null)
-        })
-      })
-      .then( async () => {
-        let placeMarkersArray, placeLabelsAndUrlArray
-
-        ;[ placeLabelsAndUrlArray, placeMarkersArray ] = await getPlacesAndUpdateListings(this.state.map, this.state.center)
-        return [ placeLabelsAndUrlArray, placeMarkersArray ]
-      })
-      .then( ([ placeLabelsAndUrlArray, placeMarkersArray ]) => {
-        
-        this.setState( {
-          markers: [...placeMarkersArray]
-        })
-        this.cafeElement.innerHTML = this.getPlaceHtmlString(placeLabelsAndUrlArray.filter( element => element.placeType === 'cafe'))
-        this.kidsActivityElement.innerHTML = this.getPlaceHtmlString(placeLabelsAndUrlArray.filter( element => element.placeType === 'kids activity'))
+        map.addListener('dragend', () => this.updateListings() )
+        this.updateListings()
       })
       .catch((error) => { console.log(error) })
   }
@@ -128,10 +105,36 @@ class App extends Component {
     })
   }
 
+  async updateListings() {
+    // clear markers
+    let placeMarkersArray, placeLabelsAndUrlArray
+
+    this.state.markers.forEach( marker => {
+      marker.setMap(null)
+    })
+
+    this.setState({ 
+      center: { 
+        lat: this.state.map.getCenter().lat(),
+        lng: this.state.map.getCenter().lng(),
+      },
+      markers: [],
+     })
+
+    ;[ placeLabelsAndUrlArray, placeMarkersArray ] = await getPlacesAndUpdateListings(this.state.map, this.state.center)
+
+    this.setState( {
+      markers: [...placeMarkersArray]
+    })
+    this.cafeElement.innerHTML = this.getPlaceHtmlString(placeLabelsAndUrlArray.filter( element => element.placeType === 'cafe'))
+    this.kidsActivityElement.innerHTML = this.getPlaceHtmlString(placeLabelsAndUrlArray.filter( element => element.placeType === 'kids activity'))
+  }
+
   render() {
     return (
       <div style={{ height: '100vh' }}>
         <div ref={mapElement => (this.mapElement = mapElement) } style={{ height: '60%', width: '100%' }}/>
+        
         <div id='cafes' style={{ 
           height: '400px', 
           width: '50%', 
@@ -139,10 +142,10 @@ class App extends Component {
           color: 'white', 
           backgroundColor: 'gray' 
         }}>
-
           <h2>Cafes</h2>
           <div ref={cafeElement => (this.cafeElement = cafeElement)} />
         </div>
+
         <div id='kids-activities' style={{ 
           height: '400px', 
           width: '50%', 
@@ -150,7 +153,6 @@ class App extends Component {
           color: 'white', 
           backgroundColor: 'gray' 
         }}>
-
           <h2>Kids Activities</h2>
           <div ref={kidsActivityElement => (this.kidsActivityElement = kidsActivityElement)} />
         </div>

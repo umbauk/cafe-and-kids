@@ -16,9 +16,11 @@ import { getPlacesAndUpdateListings } from './api/getPlacesAndUpdateListings'
 //  - list of highest rated (create method for this), open, relevant activities shown, pref with snippet/photo to explain what it is
 //  - include numbered markers on map
 //  - include coffee, lunch and dinner recommendations as appropriate
-//  - ability to decline individual recommendations, which then get replaced by another
+//  - STRETCH: ability to decline individual recommendations, which then get replaced by another
 //  - ability to click on acitivty to be taken to website or detailed Google Maps listing for it
 // Redesign for mobile
+// Host on server
+// Produce Back-end to save user searches
 
 function loadJS(src) {
   var ref = window.document.getElementsByTagName("script")[0];
@@ -82,12 +84,6 @@ class App extends Component {
       .catch((error) => { console.log(error) })
   }
 
-  getPlaceHtmlString(placeLabelsAndUrlArray) {
-    return placeLabelsAndUrlArray.map( (place) => {
-      return `<br>${place.label}: <a target="_blank" rel="noopener noreferrer" href="${place.url}">${place.name}</a> - ${place.rating}`
-    }).join('')
-  }
-
   getCurrentLocation() {
     return new Promise((resolve, reject) => {
       if (!navigator.geolocation) reject(new Error('Get User Location error'))
@@ -106,9 +102,9 @@ class App extends Component {
   }
 
   async updateListings() {
-    // clear markers
     let placeMarkersArray, placeLabelsAndUrlArray
-
+    
+    // clear markers
     this.state.markers.forEach( marker => {
       marker.setMap(null)
     })
@@ -128,6 +124,12 @@ class App extends Component {
     })
     this.cafeElement.innerHTML = this.getPlaceHtmlString(placeLabelsAndUrlArray.filter( element => element.placeType === 'cafe'))
     this.kidsActivityElement.innerHTML = this.getPlaceHtmlString(placeLabelsAndUrlArray.filter( element => element.placeType === 'kids activity'))
+  }
+
+  getPlaceHtmlString(placeLabelsAndUrlArray) {
+    return placeLabelsAndUrlArray.map( (place) => {
+      return `<br>${place.label}: <a target="_blank" rel="noopener noreferrer" href="${place.url}">${place.name}</a> - ${place.rating}`
+    }).join('')
   }
 
   render() {

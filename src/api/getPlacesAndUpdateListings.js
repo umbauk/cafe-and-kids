@@ -41,7 +41,8 @@ async function refreshNearbyPlaces(map, mapCenter) {
 
   const placesArray = [await cafeList, await kidsActivityList]
   const flattenedPlacesArray = [].concat(...placesArray)
-  const filteredPlacesArray = checkPlaceIsWithinRadius(centerPoint, searchRadius, flattenedPlacesArray)
+  const highRatedPlacesArray = filterOutLowRatedPlaces(flattenedPlacesArray)
+  const filteredPlacesArray = checkPlaceIsWithinRadius(centerPoint, searchRadius, highRatedPlacesArray)
   return new Promise((resolve) => {
     resolve(filteredPlacesArray) 
   })  
@@ -52,7 +53,7 @@ function getPlacesList(service, request) {
     service.textSearch(request, (placesArray, status) => {
       if (status === google.maps.places.PlacesServiceStatus.OK) {
         console.log('Places Service status: ok')
-        // Add the placeType (cafe or 'kids activity') to each entry in array
+        // Add the placeType ('cafe' or 'kids activity') to each entry in array
         let returnArray = placesArray.map( element => {
           return Object.assign(element, { placeType: request.placeType })
         })
@@ -65,11 +66,16 @@ function getPlacesList(service, request) {
   })
 }
 
-function checkPlaceIsWithinRadius(centerPoint, searchRadius, placesArray) {
+function filterOutLowRatedPlaces(flattenedPlacesArray) {
+  const lowestRating = 4.0
+  return flattenedPlacesArray.filter( place => place.rating >= lowestRating )
+}
+
+function checkPlaceIsWithinRadius(centerPoint, searchRadius, highRatedPlacesArray) {
   const searchRadiusInLatDegrees = (parseInt(searchRadius) / 1000) / 111
   const searchRadiusInLngDegrees = (parseInt(searchRadius) / 1000) / ( Math.cos(centerPoint.lat) * 111.32 )
 
-  return placesArray.filter( place => {
+  return highRatedPlacesArray.filter( place => {
     return (place.geometry.location.lat() < (centerPoint.lat + searchRadiusInLatDegrees)) &&
       (place.geometry.location.lat() > (centerPoint.lat - searchRadiusInLatDegrees)) &&
       (place.geometry.location.lng() > (centerPoint.lng + searchRadiusInLngDegrees)) &&
@@ -108,4 +114,3 @@ function addMarkers(filteredPlacesArray, map) {
   })
   return [returnArray, markerArray]
 }
-

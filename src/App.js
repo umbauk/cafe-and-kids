@@ -1,6 +1,9 @@
 import React, { Component } from 'react'
+import { Card, CardImg, CardText, CardBody,
+  CardTitle, CardSubtitle, Button } from 'reactstrap';
 import './App.css'
 import { getPlacesAndUpdateListings } from './api/getPlacesAndUpdateListings'
+
 /* global google */
 
 // To do:
@@ -79,7 +82,7 @@ class App extends Component {
       })
       .then(() => {
         map.addListener('dragend', () => this.updateListings() )
-        this.updateListings()
+        //this.updateListings()
       })
       .catch((error) => { console.log(error) })
   }
@@ -134,27 +137,24 @@ class App extends Component {
 
   render() {
     return (
-      <div style={{ height: '100vh' }}>
-        <div ref={mapElement => (this.mapElement = mapElement) } style={{ height: '60%', width: '100%' }}/>
+      <div id='parent-window'>
+        <div id='map-element' ref={ mapElement => (this.mapElement = mapElement) }/>
+
+        <Card className='input-card'>
+          <CardBody>
+            <CardTitle>Card title</CardTitle>
+            <CardSubtitle>Card subtitle</CardSubtitle>
+            <CardText>Some quick example text to build on the card title and make up the bulk of the card's content.</CardText>
+            <Button>Button</Button>
+          </CardBody>
+        </Card>
         
-        <div id='cafes' style={{ 
-          height: '400px', 
-          width: '50%', 
-          float: 'left', 
-          color: 'white', 
-          backgroundColor: 'gray' 
-        }}>
+        <div id='cafes' className='place-container'>
           <h2>Cafes</h2>
           <div ref={cafeElement => (this.cafeElement = cafeElement)} />
         </div>
 
-        <div id='kids-activities' style={{ 
-          height: '400px', 
-          width: '50%', 
-          float: 'left', 
-          color: 'white', 
-          backgroundColor: 'gray' 
-        }}>
+        <div id='kids-activities' className='place-container'>
           <h2>Kids Activities</h2>
           <div ref={kidsActivityElement => (this.kidsActivityElement = kidsActivityElement)} />
         </div>

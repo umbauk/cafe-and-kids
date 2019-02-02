@@ -1,5 +1,7 @@
 import { getPlaceUrl } from './getPlaceUrl.js'
 /* global google */
+const globalCafeQuery = 'kid friendly coffee shop'  // Google Maps text query for cafes
+const globalKidsActivityQuery = 'playground'        // Google Maps text query for kids activities
 
 export async function getPlacesAndUpdateListings(map, mapCenter) {
   let placeAndLabelsArray, markerArray
@@ -19,7 +21,7 @@ async function refreshNearbyPlaces(map, mapCenter) {
   const centerPoint = mapCenter
   const searchRadius = '2000'
   const cafeRequest = {
-    query: 'kid friendly coffee shop',
+    query: globalCafeQuery,
     location: centerPoint,
     radius: searchRadius,
     //type: ['cafe'],
@@ -27,7 +29,7 @@ async function refreshNearbyPlaces(map, mapCenter) {
   }
 
   const kidsActivityRequest = {
-    query: 'playground',
+    query: globalKidsActivityQuery,
     location: centerPoint,
     radius: searchRadius,
     //type: ['park'],

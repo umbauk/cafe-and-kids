@@ -19,11 +19,15 @@
   background-color: gray; 
 }
 
-.input-card {
-  z-index: 999;
+#welcome-card {
   position: absolute;
-  top: 0;
-  right: 0;
+  top: 20%;
+  right: 25%;
+  width: 50%;
+}
+
+.button {
+  margin: 5px;
 }
 
 

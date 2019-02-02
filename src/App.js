@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
-import { Card, CardImg, CardText, CardBody,
-  CardTitle, CardSubtitle, Button } from 'reactstrap';
+import { Card, CardText, CardBody,
+  CardTitle, Button, Input, Label } from 'reactstrap';
 import './App.css'
 import { getPlacesAndUpdateListings } from './api/getPlacesAndUpdateListings'
 
@@ -43,7 +43,8 @@ class App extends Component {
         lng: -122.419416
       },
       map: {},
-      markers: []
+      markers: [],
+      eventDate: null,
     }
 
     this.initMap = this.initMap.bind(this)
@@ -122,7 +123,7 @@ class App extends Component {
 
     ;[ placeLabelsAndUrlArray, placeMarkersArray ] = await getPlacesAndUpdateListings(this.state.map, this.state.center)
 
-    this.setState( {
+    this.setState({
       markers: [...placeMarkersArray]
     })
     this.cafeElement.innerHTML = this.getPlaceHtmlString(placeLabelsAndUrlArray.filter( element => element.placeType === 'cafe'))
@@ -135,19 +136,45 @@ class App extends Component {
     }).join('')
   }
 
+  dateBtnClicked = (evt) => {
+    this.setState({
+      eventDate: evt.target.name
+    })
+  }
+
+  locationBtnClicked = (evt) => {
+    console.log(evt.target.name)
+    this.setState({
+      location: evt.target.name
+    })
+  }
+
   render() {
     return (
       <div id='parent-window'>
         <div id='map-element' ref={ mapElement => (this.mapElement = mapElement) }/>
 
-        <Card className='input-card'>
-          <CardBody>
-            <CardTitle>Card title</CardTitle>
-            <CardSubtitle>Card subtitle</CardSubtitle>
-            <CardText>Some quick example text to build on the card title and make up the bulk of the card's content.</CardText>
-            <Button>Button</Button>
-          </CardBody>
-        </Card>
+        { !this.state.eventDate ?
+          <Card id='welcome-card'>
+            <CardBody>
+              <CardTitle>Welcome to <b>Everyone's Happy</b> - the app for finding days out for the kids AND you!</CardTitle>
+              <CardText>When would you like to do your family activity?</CardText>
+              <Button className="button" onClick={this.dateBtnClicked} name="today">Today</Button>
+              <Button className="button" onClick={this.dateBtnClicked} name="tomorrow">Tomorrow</Button>
+            </CardBody>
+          </Card> : null 
+        }
+
+        { this.state.eventDate && !this.state.location ?
+          <Card id='welcome-card'>
+            <CardBody>
+              <CardText>Where should it be close to?</CardText>
+              <Input type="text" name="location" id="locationTextBox" placeholder="" />
+              <Button className="button" onClick={this.locationBtnClicked} name="useCurrentLocation">Use current location</Button>
+              <Button className="button" onClick={this.locationBtnClicked} name="location">Submit</Button>
+            </CardBody>
+          </Card> : null 
+        }
         
         <div id='cafes' className='place-container'>
           <h2>Cafes</h2>

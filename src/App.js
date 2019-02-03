@@ -7,6 +7,7 @@ import { getPlacesAndUpdateListings } from './api/getPlacesAndUpdateListings'
 /* global google */
 
 // To do:
+// Update map on clicking use current location not working
 // format places: location, snippet, (photo?)
 // add search text box to search for place to act as new center
 // return highly-rated, kid friendly cafes and show markers on map
@@ -62,30 +63,27 @@ class App extends Component {
   }
 
   initMap() {
-    const zoom = 13
+    const zoom = 1 // 13
     let map = {}
 
-    this.getCurrentLocation()
-      .then((userLocationCoords) => { 
-        let mapConfig = {
-          center: userLocationCoords,
-          zoom
-        } 
-        map = new google.maps.Map(this.mapElement, mapConfig)
-        this.setState({ 
-          map: map,
-          center: { 
-            lat: map.getCenter().lat(),
-            lng: map.getCenter().lng()  
-          },
-         })
+    let mapConfig = {
+      center: { 
+        lat: 53.345806,
+        lng: -6.259674,
+      },
+      zoom
+    } 
+    map = new google.maps.Map(this.mapElement, mapConfig)
+    map.addListener('dragend', () => this.updateListings() )
 
-      })
-      .then(() => {
-        map.addListener('dragend', () => this.updateListings() )
-        //this.updateListings()
-      })
-      .catch((error) => { console.log(error) })
+    this.setState({ 
+      map: map,
+      center: { 
+        lat: map.getCenter().lat(),
+        lng: map.getCenter().lng()  
+      },
+    })
+    //.catch((error) => { console.log(error) })
   }
 
   getCurrentLocation() {
@@ -119,7 +117,7 @@ class App extends Component {
         lng: this.state.map.getCenter().lng(),
       },
       markers: [],
-     })
+    })
 
     ;[ placeLabelsAndUrlArray, placeMarkersArray ] = await getPlacesAndUpdateListings(this.state.map, this.state.center)
 
@@ -144,9 +142,19 @@ class App extends Component {
 
   locationBtnClicked = (evt) => {
     console.log(evt.target.name)
-    this.setState({
-      location: evt.target.name
-    })
+    if (evt.target.name === 'useCurrentLocation') {
+      const map = this.state.map
+      const centerCoords = this.getCurrentLocation()
+
+      map.setCenter = centerCoords
+      map.setZoom = 13
+      this.setState({
+        center: centerCoords,
+        location: 1,
+      })
+    } else {
+      // get coords for place search in google maps and center
+    }
   }
 
   render() {

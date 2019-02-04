@@ -63,7 +63,7 @@ class App extends Component {
   }
 
   initMap() {
-    const zoom = 1 // 13
+    const zoom = 3 // 13
     let map = {}
 
     let mapConfig = {

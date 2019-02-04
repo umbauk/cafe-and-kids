@@ -1,13 +1,13 @@
 import React, { Component } from 'react'
 import { Card, CardText, CardBody,
-  CardTitle, Button, Input, Label } from 'reactstrap';
+  CardTitle, Button, Input, } from 'reactstrap';
 import './App.css'
 import { getPlacesAndUpdateListings } from './api/getPlacesAndUpdateListings'
 
 /* global google */
 
 // To do:
-// Update map on clicking use current location not working
+// complete code for when user doesn't select current location
 // format places: location, snippet, (photo?)
 // add search text box to search for place to act as new center
 // return highly-rated, kid friendly cafes and show markers on map
@@ -140,21 +140,20 @@ class App extends Component {
     })
   }
 
-  locationBtnClicked = (evt) => {
-    console.log(evt.target.name)
+  locationBtnClicked = async (evt) => {
     if (evt.target.name === 'useCurrentLocation') {
       const map = this.state.map
-      const centerCoords = this.getCurrentLocation()
+      const centerCoords = await this.getCurrentLocation()
 
-      map.setCenter = centerCoords
-      map.setZoom = 13
+      map.setCenter(centerCoords)
+      map.setZoom(13)
       this.setState({
-        center: centerCoords,
         location: 1,
       })
     } else {
       // get coords for place search in google maps and center
     }
+    this.updateListings()
   }
 
   render() {

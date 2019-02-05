@@ -1,12 +1,13 @@
 import React, { Component } from 'react'
 import { Card, CardText, CardBody,
-  CardTitle, Button, Input, } from 'reactstrap';
+  CardTitle, Button, Input, Table, } from 'reactstrap';
 import './App.css'
 import { getPlacesAndUpdateListings } from './api/getPlacesAndUpdateListings'
 
 /* global google */
 
 // To do:
+// make map full page and make results container float
 // complete code for when user doesn't select current location
 // format places: location, snippet, (photo?)
 // add search text box to search for place to act as new center
@@ -34,6 +35,32 @@ function loadJS(src) {
   ref.parentNode.insertBefore(script, ref);
 }
 
+function ResultsTable(props) {
+  
+  return (
+    <Table borderless>
+      <thead>
+        <tr>
+          <th>Label</th>
+          <th>Place name</th>
+          <th>Rating / 5</th>
+        </tr>
+      </thead>
+      <tbody>
+        {// Separate each rows of table into new component, passing one result to it at once (if can't get map working)}
+        {props.data.map( (place) => {
+          return `
+<tr>
+<th scope="row">${place.label}</th>
+<td><a target="_blank" rel="noopener noreferrer" href="${place.url}">${place.name}</a></td>
+<td>${place.rating}</td>
+</tr>`
+  }).join('')}
+      </tbody>
+    </Table>
+  )
+}
+
 class App extends Component {
   constructor(props) {
     super(props)
@@ -45,7 +72,9 @@ class App extends Component {
       },
       map: {},
       markers: [],
-      eventDate: null,
+      eventDate: null,         // Date user wants to do activity
+      cafeResults: '',         // HTML to be displayed in Table
+      kidsActivityResults: '', // HTML to be displayed in Table
     }
 
     this.initMap = this.initMap.bind(this)
@@ -122,16 +151,24 @@ class App extends Component {
     ;[ placeLabelsAndUrlArray, placeMarkersArray ] = await getPlacesAndUpdateListings(this.state.map, this.state.center)
 
     this.setState({
-      markers: [...placeMarkersArray]
+      markers: [...placeMarkersArray],
+      cafeResults: placeLabelsAndUrlArray.filter( element => element.placeType === 'cafe'),
+      kidsActivityResults: placeLabelsAndUrlArray.filter( element => element.placeType === 'kids activity'),
+      //cafeResults: this.getPlaceHtmlString(placeLabelsAndUrlArray.filter( element => element.placeType === 'cafe')),
+      //kidsActivityResults: this.getPlaceHtmlString(placeLabelsAndUrlArray.filter( element => element.placeType === 'kids activity'))
     })
-    this.cafeElement.innerHTML = this.getPlaceHtmlString(placeLabelsAndUrlArray.filter( element => element.placeType === 'cafe'))
-    this.kidsActivityElement.innerHTML = this.getPlaceHtmlString(placeLabelsAndUrlArray.filter( element => element.placeType === 'kids activity'))
   }
 
   getPlaceHtmlString(placeLabelsAndUrlArray) {
     return placeLabelsAndUrlArray.map( (place) => {
-      return `<br>${place.label}: <a target="_blank" rel="noopener noreferrer" href="${place.url}">${place.name}</a> - ${place.rating}`
+      return `
+<tr>
+  <th scope="row">${place.label}</th>
+  <td><a target="_blank" rel="noopener noreferrer" href="${place.url}">${place.name}</a></td>
+  <td>${place.rating}</td>
+</tr>`
     }).join('')
+
   }
 
   dateBtnClicked = (evt) => {
@@ -182,16 +219,21 @@ class App extends Component {
             </CardBody>
           </Card> : null 
         }
-        
-        <div id='cafes' className='place-container'>
-          <h2>Cafes</h2>
-          <div ref={cafeElement => (this.cafeElement = cafeElement)} />
-        </div>
 
-        <div id='kids-activities' className='place-container'>
-          <h2>Kids Activities</h2>
-          <div ref={kidsActivityElement => (this.kidsActivityElement = kidsActivityElement)} />
-        </div>
+        <Card id='cafe-results-card'>
+        <CardBody>
+          <CardText>Cafe Results</CardText>
+          <ResultsTable id="cafe-results-table" data={this.state.cafeResults}/>
+        </CardBody>
+        </Card>
+
+        <Card id='kids-activity-results-card'>
+        <CardBody>
+          <CardText>Kids Activity Results</CardText>
+          <ResultsTable id="kids-activity-results-table" data={this.state.kidsActivityResults}/>
+        </CardBody>
+        </Card>
+
       </div>
     )
   }

@@ -35,31 +35,35 @@ function loadJS(src) {
   ref.parentNode.insertBefore(script, ref);
 }
 
-function ResultsTable(props) {
-  
-  return (
-    <Table borderless>
-      <thead>
+const CardTable = ({ cardId, cardText, tableId, placeResultsArray }) => (
+  <Card id={cardId}>
+    <CardBody>
+      <CardText>{cardText}</CardText>
+      {placeResultsArray && <ResultsTable id={tableId} placeResultsArray={placeResultsArray}/>}
+    </CardBody>
+  </Card>
+)
+
+const ResultsTable = ({ placeResultsArray }) => (
+  <Table borderless>
+    <thead>
+      <tr>
+        <th>Label</th>
+        <th>Place name</th>
+        <th>Rating / 5</th>
+      </tr>
+    </thead>
+    <tbody>
+      {placeResultsArray.map( place => 
         <tr>
-          <th>Label</th>
-          <th>Place name</th>
-          <th>Rating / 5</th>
+          <th scope="row">{place.label}</th>
+          <td><a target="_blank" rel="noopener noreferrer" href={place.url}>{place.name}</a></td>
+          <td>{place.rating}</td>
         </tr>
-      </thead>
-      <tbody>
-        {// Separate each rows of table into new component, passing one result to it at once (if can't get map working)}
-        {props.data.map( (place) => {
-          return `
-<tr>
-<th scope="row">${place.label}</th>
-<td><a target="_blank" rel="noopener noreferrer" href="${place.url}">${place.name}</a></td>
-<td>${place.rating}</td>
-</tr>`
-  }).join('')}
-      </tbody>
-    </Table>
-  )
-}
+      )}
+    </tbody>
+  </Table>
+)
 
 class App extends Component {
   constructor(props) {
@@ -79,7 +83,6 @@ class App extends Component {
 
     this.initMap = this.initMap.bind(this)
     this.getCurrentLocation = this.getCurrentLocation.bind(this)
-    this.getPlaceHtmlString = this.getPlaceHtmlString.bind(this)
     this.updateListings = this.updateListings.bind(this)
   }
 
@@ -154,21 +157,7 @@ class App extends Component {
       markers: [...placeMarkersArray],
       cafeResults: placeLabelsAndUrlArray.filter( element => element.placeType === 'cafe'),
       kidsActivityResults: placeLabelsAndUrlArray.filter( element => element.placeType === 'kids activity'),
-      //cafeResults: this.getPlaceHtmlString(placeLabelsAndUrlArray.filter( element => element.placeType === 'cafe')),
-      //kidsActivityResults: this.getPlaceHtmlString(placeLabelsAndUrlArray.filter( element => element.placeType === 'kids activity'))
     })
-  }
-
-  getPlaceHtmlString(placeLabelsAndUrlArray) {
-    return placeLabelsAndUrlArray.map( (place) => {
-      return `
-<tr>
-  <th scope="row">${place.label}</th>
-  <td><a target="_blank" rel="noopener noreferrer" href="${place.url}">${place.name}</a></td>
-  <td>${place.rating}</td>
-</tr>`
-    }).join('')
-
   }
 
   dateBtnClicked = (evt) => {
@@ -220,19 +209,19 @@ class App extends Component {
           </Card> : null 
         }
 
-        <Card id='cafe-results-card'>
-        <CardBody>
-          <CardText>Cafe Results</CardText>
-          <ResultsTable id="cafe-results-table" data={this.state.cafeResults}/>
-        </CardBody>
-        </Card>
+        <CardTable 
+          cardId='cafe-results-card'
+          cardText='Cafe Results'
+          tableId='cafe-results-table'
+          placeResultsArray={this.state.cafeResults}
+        />
 
-        <Card id='kids-activity-results-card'>
-        <CardBody>
-          <CardText>Kids Activity Results</CardText>
-          <ResultsTable id="kids-activity-results-table" data={this.state.kidsActivityResults}/>
-        </CardBody>
-        </Card>
+        <CardTable 
+          cardId='kids-activity-results-card'
+          cardText='Kids Activity Results'
+          tableId='kids-activity-results-table'
+          placeResultsArray={this.state.kidsActivityResults}
+        />
 
       </div>
     )

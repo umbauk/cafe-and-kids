@@ -38,7 +38,7 @@ function loadJS(src) {
 const CardTable = ({ cardId, cardText, tableId, placeResultsArray }) => (
   <Card id={cardId}>
     <CardBody>
-      <CardText>{cardText}</CardText>
+      <CardText><h3>{cardText}</h3></CardText>
       {placeResultsArray && <ResultsTable id={tableId} placeResultsArray={placeResultsArray}/>}
     </CardBody>
   </Card>
@@ -209,19 +209,21 @@ class App extends Component {
           </Card> : null 
         }
 
-        <CardTable 
-          cardId='cafe-results-card'
-          cardText='Cafe Results'
-          tableId='cafe-results-table'
-          placeResultsArray={this.state.cafeResults}
-        />
+        <div id="cardtable-container">
+          <CardTable 
+            cardId='cafe-results-card'
+            cardText='Cafe Results'
+            tableId='cafe-results-table'
+            placeResultsArray={this.state.cafeResults}
+          />
 
-        <CardTable 
-          cardId='kids-activity-results-card'
-          cardText='Kids Activity Results'
-          tableId='kids-activity-results-table'
-          placeResultsArray={this.state.kidsActivityResults}
-        />
+          <CardTable 
+            cardId='kids-activity-results-card'
+            cardText='Kids Activity Results'
+            tableId='kids-activity-results-table'
+            placeResultsArray={this.state.kidsActivityResults}
+          />
+        </div>
 
       </div>
     )

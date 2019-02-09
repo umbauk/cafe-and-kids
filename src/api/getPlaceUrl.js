@@ -1,5 +1,13 @@
-/* global google */
+export function getPlaceUrl(placeAndLabelsArray, map) {
+  console.log('4) getPlaceUrl starting')
+  return placeAndLabelsArray.map( place => {
+    let placeNameWithoutSpaces = place.name.replace(/\s/g, '+')
+    let placeUrl = `https://www.google.com/maps/search/?api=1&query=${placeNameWithoutSpaces}&query_place_id=${place.place_id}`
+    return Object.assign( place, { url: placeUrl })
+  })
+}
 
+/* OLD GOOGLE PLACE DETAILS REQUEST
 export function getPlaceUrl(placeAndLabelsArray, map) {
   console.log('4) getPlaceUrl starting')
   const service = new google.maps.places.PlacesService(map)
@@ -37,3 +45,4 @@ function getUrlsFromGoogle(place, service) {
       })
   })
 }
+*/

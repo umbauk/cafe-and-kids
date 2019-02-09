@@ -59,6 +59,7 @@ function getPlacesList(service, request) {
         let returnArray = placesArray.map( element => {
           return Object.assign(element, { placeType: request.placeType })
         })
+        console.log(returnArray)
         resolve(returnArray)
       } else {
         console.log(google.maps.places.PlacesServiceStatus)

@@ -7,8 +7,9 @@ import { getPlacesAndUpdateListings } from './api/getPlacesAndUpdateListings'
 /* global google */
 
 // To do:
-// make map full page and make results container float
 // complete code for when user doesn't select current location
+// have box open when clicking marker with details and photo?. Also highlight relevant text in card
+// Misc: sort rating results, incorporate number of reviews into order, say if no results so know it's working, format tables so columns are aligned, set max number of results
 // format places: location, snippet, (photo?)
 // add search text box to search for place to act as new center
 // return highly-rated, kid friendly cafes and show markers on map
@@ -187,42 +188,48 @@ class App extends Component {
       <div id='parent-window'>
         <div id='map-element' ref={ mapElement => (this.mapElement = mapElement) }/>
 
-        { !this.state.eventDate ?
-          <Card id='welcome-card'>
-            <CardBody>
-              <CardTitle>Welcome to <b>Everyone's Happy</b> - the app for finding days out for the kids AND you!</CardTitle>
-              <CardText>When would you like to do your family activity?</CardText>
-              <Button className="button" onClick={this.dateBtnClicked} name="today">Today</Button>
-              <Button className="button" onClick={this.dateBtnClicked} name="tomorrow">Tomorrow</Button>
-            </CardBody>
-          </Card> : null 
-        }
-
-        { this.state.eventDate && !this.state.location ?
-          <Card id='welcome-card'>
-            <CardBody>
-              <CardText>Where should it be close to?</CardText>
-              <Input type="text" name="location" id="locationTextBox" placeholder="" />
-              <Button className="button" onClick={this.locationBtnClicked} name="useCurrentLocation">Use current location</Button>
-              <Button className="button" onClick={this.locationBtnClicked} name="location">Submit</Button>
-            </CardBody>
-          </Card> : null 
-        }
+        
 
         <div id="cardtable-container">
-          <CardTable 
-            cardId='cafe-results-card'
-            cardText='Cafe Results'
-            tableId='cafe-results-table'
-            placeResultsArray={this.state.cafeResults}
-          />
+          { !this.state.eventDate &&
+            <Card id='welcome-card'>
+              <CardBody>
+                <CardTitle>Welcome to <b>Everyone's Happy</b> - the app for finding days out for the kids AND you!</CardTitle>
+                <CardText>When would you like to do your family activity?</CardText>
+                <Button className="button" onClick={this.dateBtnClicked} name="today">Today</Button>
+                <Button className="button" onClick={this.dateBtnClicked} name="tomorrow">Tomorrow</Button>
+              </CardBody>
+            </Card>
+          }
 
-          <CardTable 
-            cardId='kids-activity-results-card'
-            cardText='Kids Activity Results'
-            tableId='kids-activity-results-table'
-            placeResultsArray={this.state.kidsActivityResults}
-          />
+          { (this.state.eventDate && !this.state.location) &&
+            <Card id='welcome-card'>
+              <CardBody>
+                <CardText>Where should it be close to?</CardText>
+                <Input type="text" name="location" id="locationTextBox" placeholder="" />
+                <Button className="button" onClick={this.locationBtnClicked} name="useCurrentLocation">Use current location</Button>
+                <Button className="button" onClick={this.locationBtnClicked} name="location">Submit</Button>
+              </CardBody>
+            </Card>
+          }
+
+          { this.state.location && 
+          <div id="cardTable-container">
+            <CardTable 
+              cardId='cafe-results-card'
+              cardText='Cafe Results'
+              tableId='cafe-results-table'
+              placeResultsArray={this.state.cafeResults}
+            />
+
+            <CardTable 
+              cardId='kids-activity-results-card'
+              cardText='Kids Activity Results'
+              tableId='kids-activity-results-table'
+              placeResultsArray={this.state.kidsActivityResults}
+            />
+          </div>
+          }
         </div>
 
       </div>

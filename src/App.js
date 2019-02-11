@@ -1,8 +1,16 @@
-import React, { Component } from 'react'
-import { Card, CardText, CardBody,
-  CardTitle, Button, Input, Table, } from 'reactstrap';
-import './App.css'
-import { getPlacesAndUpdateListings } from './api/getPlacesAndUpdateListings'
+import React, { Component } from 'react';
+import {
+  Card,
+  CardText,
+  CardBody,
+  CardTitle,
+  Button,
+  Input,
+  Table,
+} from 'reactstrap';
+import './App.css';
+import { getPlacesAndUpdateListings } from './api/getPlacesAndUpdateListings';
+import { getCurrentLocation } from './api/getCurrentLocation';
 
 /* global google */
 
@@ -14,7 +22,7 @@ import { getPlacesAndUpdateListings } from './api/getPlacesAndUpdateListings'
 // add search text box to search for place to act as new center
 // return highly-rated, kid friendly cafes and show markers on map
 // return highly-rated playgrounds / playcentres / parks for kids and show markers on map
-// Add user-journey: 
+// Add user-journey:
 //  - enter ages of children
 //  - enter date/time (check weather)
 //  - how close should it be (based on driving time at the date/time specified, walking time) OR where should it be
@@ -29,8 +37,8 @@ import { getPlacesAndUpdateListings } from './api/getPlacesAndUpdateListings'
 // Produce Back-end to save user searches
 
 function loadJS(src) {
-  var ref = window.document.getElementsByTagName("script")[0];
-  var script = window.document.createElement("script");
+  var ref = window.document.getElementsByTagName('script')[0];
+  var script = window.document.createElement('script');
   script.src = src;
   script.async = true;
   ref.parentNode.insertBefore(script, ref);
@@ -39,11 +47,15 @@ function loadJS(src) {
 const CardTable = ({ cardId, cardText, tableId, placeResultsArray }) => (
   <Card id={cardId}>
     <CardBody>
-      <CardText><h3>{cardText}</h3></CardText>
-      {placeResultsArray && <ResultsTable id={tableId} placeResultsArray={placeResultsArray}/>}
+      <CardText>
+        <h3>{cardText}</h3>
+      </CardText>
+      {placeResultsArray && (
+        <ResultsTable id={tableId} placeResultsArray={placeResultsArray} />
+      )}
     </CardBody>
   </Card>
-)
+);
 
 const ResultsTable = ({ placeResultsArray }) => (
   <Table borderless>
@@ -55,36 +67,41 @@ const ResultsTable = ({ placeResultsArray }) => (
       </tr>
     </thead>
     <tbody>
-      {placeResultsArray.map( place => 
+      {placeResultsArray.map(place => (
         <tr>
           <th scope="row">{place.label}</th>
-          <td><a target="_blank" rel="noopener noreferrer" href={place.url}>{place.name}</a></td>
+          <td>
+            <a target="_blank" rel="noopener noreferrer" href={place.url}>
+              {place.name}
+            </a>
+          </td>
           <td>{place.rating}</td>
         </tr>
-      )}
+      ))}
     </tbody>
   </Table>
-)
+);
 
 class App extends Component {
   constructor(props) {
-    super(props)
+    super(props);
 
     this.state = {
       center: {
         lat: 37.774929,
-        lng: -122.419416
+        lng: -122.419416,
       },
       map: {},
       markers: [],
-      eventDate: null,         // Date user wants to do activity
-      cafeResults: '',         // HTML to be displayed in Table
+      eventDate: null, // Date user wants to do activity
+      cafeResults: '', // HTML to be displayed in Table
       kidsActivityResults: '', // HTML to be displayed in Table
-    }
+      location: null,
+      locationTextBoxValue: '',
+    };
 
-    this.initMap = this.initMap.bind(this)
-    this.getCurrentLocation = this.getCurrentLocation.bind(this)
-    this.updateListings = this.updateListings.bind(this)
+    this.initMap = this.initMap.bind(this);
+    this.updateListings = this.updateListings.bind(this);
   }
 
   componentDidMount() {
@@ -92,149 +109,196 @@ class App extends Component {
     // so Google Maps can invoke it
     window.initMap = this.initMap;
     // Asynchronously load the Google Maps script, passing in the callback reference
-    loadJS('https://maps.googleapis.com/maps/api/js?key=AIzaSyBoKmshPxsNC3n5M88_BKq2I_IJgiVx47g&libraries=places&callback=initMap')
+    loadJS(
+      'https://maps.googleapis.com/maps/api/js?key=AIzaSyBoKmshPxsNC3n5M88_BKq2I_IJgiVx47g&libraries=places&callback=initMap',
+    );
   }
 
   initMap() {
-    const zoom = 3 // 13
-    let map = {}
+    const zoom = 3; // 13
+    let map = {};
 
     let mapConfig = {
-      center: { 
+      center: {
         lat: 53.345806,
         lng: -6.259674,
       },
-      zoom
-    } 
-    map = new google.maps.Map(this.mapElement, mapConfig)
-    map.addListener('dragend', () => this.updateListings() )
+      zoom,
+    };
+    map = new google.maps.Map(this.mapElement, mapConfig);
+    map.addListener('dragend', () => this.updateListings());
 
-    this.setState({ 
+    this.setState({
       map: map,
-      center: { 
+      center: {
         lat: map.getCenter().lat(),
-        lng: map.getCenter().lng()  
+        lng: map.getCenter().lng(),
       },
-    })
+    });
     //.catch((error) => { console.log(error) })
   }
 
-  getCurrentLocation() {
-    return new Promise((resolve, reject) => {
-      if (!navigator.geolocation) reject(new Error('Get User Location error'))
-      else {
-        return Promise.resolve(navigator.geolocation.getCurrentPosition((position) => {
-          let currentCoordinates = {
-            lat: position.coords.latitude,
-            lng: position.coords.longitude
-          }
-          this.setState({ center: currentCoordinates })
-          console.log('1) getCurrentLocation() complete')
-          resolve(currentCoordinates)
-        }))
-      }
-    })
-  }
-
   async updateListings() {
-    let placeMarkersArray, placeLabelsAndUrlArray
-    
-    // clear markers
-    this.state.markers.forEach( marker => {
-      marker.setMap(null)
-    })
+    let placeMarkersArray, placeLabelsAndUrlArray;
 
-    this.setState({ 
-      center: { 
+    // clear markers
+    this.state.markers.forEach(marker => {
+      marker.setMap(null);
+    });
+
+    this.setState({
+      center: {
         lat: this.state.map.getCenter().lat(),
         lng: this.state.map.getCenter().lng(),
       },
       markers: [],
-    })
-
-    ;[ placeLabelsAndUrlArray, placeMarkersArray ] = await getPlacesAndUpdateListings(this.state.map, this.state.center)
+    });
+    [
+      placeLabelsAndUrlArray,
+      placeMarkersArray,
+    ] = await getPlacesAndUpdateListings(this.state.map, this.state.center);
 
     this.setState({
       markers: [...placeMarkersArray],
-      cafeResults: placeLabelsAndUrlArray.filter( element => element.placeType === 'cafe'),
-      kidsActivityResults: placeLabelsAndUrlArray.filter( element => element.placeType === 'kids activity'),
-    })
+      cafeResults: placeLabelsAndUrlArray.filter(
+        element => element.placeType === 'cafe',
+      ),
+      kidsActivityResults: placeLabelsAndUrlArray.filter(
+        element => element.placeType === 'kids activity',
+      ),
+    });
   }
 
-  dateBtnClicked = (evt) => {
+  dateBtnClicked = evt => {
     this.setState({
-      eventDate: evt.target.name
-    })
-  }
+      eventDate: evt.target.name,
+    });
+  };
 
-  locationBtnClicked = async (evt) => {
-    if (evt.target.name === 'useCurrentLocation') {
-      const map = this.state.map
-      const centerCoords = await this.getCurrentLocation()
-
-      map.setCenter(centerCoords)
-      map.setZoom(13)
+  locationTextBoxChanged = evt => {
+    if (!this.state.autoCompleteAddedToTextBox) {
       this.setState({
-        location: 1,
-      })
+        autoCompleteAddedToTextBox: true,
+      });
+      const input = document.getElementById('locationTextBox');
+      this.autocomplete = new google.maps.places.Autocomplete(input);
+      this.autocomplete.addListener('place_changed', this.handlePlaceSelect);
+    }
+    this.setState({
+      locationTextBoxValue: evt.target.value,
+    });
+  };
+
+  handlePlaceSelect = () => {
+    console.log(this.autocomplete.getPlace().geometry.location);
+  };
+
+  locationBtnClicked = async evt => {
+    if (evt.target.name === 'useCurrentLocation') {
+      const map = this.state.map;
+      const centerCoords = await getCurrentLocation();
+      this.setState({ center: centerCoords });
+
+      map.panTo(centerCoords);
+      map.setZoom(13);
     } else {
       // get coords for place search in google maps and center
+      console.log(this.state.locationTextBoxValue);
     }
-    this.updateListings()
-  }
+    this.setState({
+      location: 1,
+    });
+    this.updateListings();
+  };
 
   render() {
     return (
-      <div id='parent-window'>
-        <div id='map-element' ref={ mapElement => (this.mapElement = mapElement) }/>
-
-        
+      <div id="parent-window">
+        <div
+          id="map-element"
+          ref={mapElement => (this.mapElement = mapElement)}
+        />
 
         <div id="cardtable-container">
-          { !this.state.eventDate &&
-            <Card id='welcome-card'>
+          {!this.state.eventDate && (
+            <Card id="welcome-card">
               <CardBody>
-                <CardTitle>Welcome to <b>Everyone's Happy</b> - the app for finding days out for the kids AND you!</CardTitle>
-                <CardText>When would you like to do your family activity?</CardText>
-                <Button className="button" onClick={this.dateBtnClicked} name="today">Today</Button>
-                <Button className="button" onClick={this.dateBtnClicked} name="tomorrow">Tomorrow</Button>
+                <CardTitle>
+                  Welcome to <b>Everyone's Happy</b> - the app for finding days
+                  out for the kids AND you!
+                </CardTitle>
+                <CardText>
+                  When would you like to do your family activity?
+                </CardText>
+                <Button
+                  className="button"
+                  onClick={this.dateBtnClicked}
+                  name="today"
+                >
+                  Today
+                </Button>
+                <Button
+                  className="button"
+                  onClick={this.dateBtnClicked}
+                  name="tomorrow"
+                >
+                  Tomorrow
+                </Button>
               </CardBody>
             </Card>
-          }
+          )}
 
-          { (this.state.eventDate && !this.state.location) &&
-            <Card id='welcome-card'>
+          {this.state.eventDate && !this.state.location && (
+            <Card id="welcome-card">
               <CardBody>
                 <CardText>Where should it be close to?</CardText>
-                <Input type="text" name="location" id="locationTextBox" placeholder="" />
-                <Button className="button" onClick={this.locationBtnClicked} name="useCurrentLocation">Use current location</Button>
-                <Button className="button" onClick={this.locationBtnClicked} name="location">Submit</Button>
+                <Input
+                  type="text"
+                  name="location"
+                  id="locationTextBox"
+                  placeholder=""
+                  value={this.state.locationTextBoxValue}
+                  onChange={this.locationTextBoxChanged}
+                />
+                <Button
+                  className="button"
+                  onClick={this.locationBtnClicked}
+                  name="useCurrentLocation"
+                >
+                  Use current location
+                </Button>
+                <Button
+                  className="button"
+                  onClick={this.locationBtnClicked}
+                  name="location"
+                >
+                  Submit
+                </Button>
               </CardBody>
             </Card>
-          }
+          )}
 
-          { this.state.location && 
-          <div id="cardTable-container">
-            <CardTable 
-              cardId='cafe-results-card'
-              cardText='Cafe Results'
-              tableId='cafe-results-table'
-              placeResultsArray={this.state.cafeResults}
-            />
+          {this.state.location && (
+            <div id="cardTable-container">
+              <CardTable
+                cardId="cafe-results-card"
+                cardText="Cafe Results"
+                tableId="cafe-results-table"
+                placeResultsArray={this.state.cafeResults}
+              />
 
-            <CardTable 
-              cardId='kids-activity-results-card'
-              cardText='Kids Activity Results'
-              tableId='kids-activity-results-table'
-              placeResultsArray={this.state.kidsActivityResults}
-            />
-          </div>
-          }
+              <CardTable
+                cardId="kids-activity-results-card"
+                cardText="Kids Activity Results"
+                tableId="kids-activity-results-table"
+                placeResultsArray={this.state.kidsActivityResults}
+              />
+            </div>
+          )}
         </div>
-
       </div>
-    )
+    );
   }
 }
 
-export default App
+export default App;

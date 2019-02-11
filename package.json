@@ -18,6 +18,9 @@
   "eslintConfig": {
     "extends": "react-app"
   },
+  "jshintConfig": {
+    "esversion": "8"
+  },
   "browserslist": [
     ">0.2%",
     "not dead",

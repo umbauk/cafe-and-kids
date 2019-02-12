@@ -14,10 +14,12 @@ import { getCurrentLocation } from './api/getCurrentLocation';
 
 /* global google */
 
+// Bugs:
+// putting 'newark' into place search box returns no results from Maps text search
+
 // To do:
-// complete code for when user doesn't select current location
 // have box open when clicking marker with details and photo?. Also highlight relevant text in card
-// Misc: sort rating results, incorporate number of reviews into order, say if no results so know it's working, format tables so columns are aligned, set max number of results
+// Misc: incorporate number of reviews into order, say if no results so know it's working, format tables so columns are aligned
 // format places: location, snippet, (photo?)
 // add search text box to search for place to act as new center
 // return highly-rated, kid friendly cafes and show markers on map
@@ -35,14 +37,6 @@ import { getCurrentLocation } from './api/getCurrentLocation';
 // Redesign for mobile
 // Host on server
 // Produce Back-end to save user searches
-
-function loadJS(src) {
-  var ref = window.document.getElementsByTagName('script')[0];
-  var script = window.document.createElement('script');
-  script.src = src;
-  script.async = true;
-  ref.parentNode.insertBefore(script, ref);
-}
 
 const CardTable = ({ cardId, cardText, tableId, placeResultsArray }) => (
   <Card id={cardId}>
@@ -81,6 +75,14 @@ const ResultsTable = ({ placeResultsArray }) => (
     </tbody>
   </Table>
 );
+
+function loadJS(src) {
+  var ref = window.document.getElementsByTagName('script')[0];
+  var script = window.document.createElement('script');
+  script.src = src;
+  script.async = true;
+  ref.parentNode.insertBefore(script, ref);
+}
 
 class App extends Component {
   constructor(props) {
@@ -194,26 +196,63 @@ class App extends Component {
 
   handlePlaceSelect = () => {
     // when place selected from dropdown box, add coordinates of selected place to state
-    this.setState({
-      locationCoords: this.autocomplete.getPlace().geometry.location,
-    });
+    if (this.autocomplete.getPlace().geometry) {
+      this.setState({
+        locationCoords: this.autocomplete.getPlace().geometry.location,
+      });
+    }
   };
 
   locationBtnClicked = async evt => {
     const map = this.state.map;
-    const centerCoords =
-      evt.target.name === 'useCurrentLocation'
-        ? await getCurrentLocation()
-        : this.state.locationCoords;
+    // if this.state.locationCoords is not defined, do a Google Maps text search for the string in this.state.locationTextBoxValue
+    // if no result returned, tell user place not found and/or default to somewhere
+
+    const centerCoords = await this.getCenterCoords(evt, map);
 
     this.setState({
       location: 1,
     });
+    console.log(centerCoords);
     map.panTo(centerCoords);
     map.setCenter(centerCoords);
     map.setZoom(13);
 
     this.updateListings();
+  };
+
+  getCenterCoords = (evt, map) => {
+    return new Promise(async (resolve, reject) => {
+      let centerCoords;
+      if (evt.target.name === 'useCurrentLocation') {
+        resolve(await getCurrentLocation());
+      } else if (!this.state.locationCoords) {
+        // if place not selected from Maps autocomplete dropdown list, user has typed in place manually
+        const service = new google.maps.places.PlacesService(map);
+        console.log(`query: ${this.state.locationTextBoxValue}`);
+        await service.textSearch(
+          {
+            query: this.state.locationTextBoxValue,
+          },
+          (results, status) => {
+            console.log('results');
+            console.log(results);
+            if (status === google.maps.places.PlacesServiceStatus.OK) {
+              centerCoords = results[0].geometry.location;
+              resolve(centerCoords);
+            } else {
+              // revert to default center
+              alert('Place not found');
+              console.log(status);
+              centerCoords = this.state.center;
+              resolve(centerCoords);
+            }
+          },
+        );
+      } else {
+        resolve(this.state.locationCoords);
+      }
+    });
   };
 
   render() {
@@ -262,7 +301,6 @@ class App extends Component {
                   name="location"
                   id="locationTextBox"
                   placeholder=""
-                  value={this.state.locationTextBoxValue}
                   onChange={this.locationTextBoxChanged}
                 />
                 <Button

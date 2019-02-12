@@ -88,8 +88,8 @@ class App extends Component {
 
     this.state = {
       center: {
-        lat: 37.774929,
-        lng: -122.419416,
+        lat: 53.345806,
+        lng: -6.259674,
       },
       map: {},
       markers: [],
@@ -98,6 +98,7 @@ class App extends Component {
       kidsActivityResults: '', // HTML to be displayed in Table
       location: null,
       locationTextBoxValue: '',
+      locationCoords: null,
     };
 
     this.initMap = this.initMap.bind(this);
@@ -135,7 +136,6 @@ class App extends Component {
         lng: map.getCenter().lng(),
       },
     });
-    //.catch((error) => { console.log(error) })
   }
 
   async updateListings() {
@@ -156,7 +156,10 @@ class App extends Component {
     [
       placeLabelsAndUrlArray,
       placeMarkersArray,
-    ] = await getPlacesAndUpdateListings(this.state.map, this.state.center);
+    ] = await getPlacesAndUpdateListings(this.state.map, {
+      lat: this.state.map.getCenter().lat(),
+      lng: this.state.map.getCenter().lng(),
+    });
 
     this.setState({
       markers: [...placeMarkersArray],
@@ -190,24 +193,26 @@ class App extends Component {
   };
 
   handlePlaceSelect = () => {
-    console.log(this.autocomplete.getPlace().geometry.location);
+    // when place selected from dropdown box, add coordinates of selected place to state
+    this.setState({
+      locationCoords: this.autocomplete.getPlace().geometry.location,
+    });
   };
 
   locationBtnClicked = async evt => {
-    if (evt.target.name === 'useCurrentLocation') {
-      const map = this.state.map;
-      const centerCoords = await getCurrentLocation();
-      this.setState({ center: centerCoords });
+    const map = this.state.map;
+    const centerCoords =
+      evt.target.name === 'useCurrentLocation'
+        ? await getCurrentLocation()
+        : this.state.locationCoords;
 
-      map.panTo(centerCoords);
-      map.setZoom(13);
-    } else {
-      // get coords for place search in google maps and center
-      console.log(this.state.locationTextBoxValue);
-    }
     this.setState({
       location: 1,
     });
+    map.panTo(centerCoords);
+    map.setCenter(centerCoords);
+    map.setZoom(13);
+
     this.updateListings();
   };
 

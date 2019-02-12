@@ -11,9 +11,9 @@ export async function getPlacesAndUpdateListings(map, mapCenter) {
   [placeAndLabelsArray, markerArray] = addMarkers(filteredPlacesArray, map);
   console.log('3) placeLabelsArray: ...');
   let placeLabelsAndUrlArray = await getPlaceUrl(placeAndLabelsArray, map);
-  await console.log('7) Writing to HTML');
+  await console.log('5) Writing to HTML');
 
-  console.log('8) refreshPlacesAndUpdateListings finished');
+  console.log('6) refreshPlacesAndUpdateListings finished');
   return [placeLabelsAndUrlArray, markerArray];
 }
 
@@ -84,9 +84,12 @@ function checkPlaceIsWithinRadius(
   searchRadius,
   highRatedPlacesArray,
 ) {
-  const searchRadiusInLatDegrees = parseInt(searchRadius) / 1000 / 111;
+  // Converts radius in metres to distance in lat/lng
+  const searchRadiusInLatDegrees = parseInt(searchRadius) / 1000 / 110.574;
   const searchRadiusInLngDegrees =
-    parseInt(searchRadius) / 1000 / (Math.cos(centerPoint.lat) * 111.32);
+    parseInt(searchRadius) /
+    1000 /
+    (Math.cos((centerPoint.lat * Math.PI) / 180) * 111.32);
 
   return highRatedPlacesArray.filter(place => {
     return (
@@ -94,9 +97,9 @@ function checkPlaceIsWithinRadius(
         centerPoint.lat + searchRadiusInLatDegrees &&
       place.geometry.location.lat() >
         centerPoint.lat - searchRadiusInLatDegrees &&
-      place.geometry.location.lng() >
+      place.geometry.location.lng() <
         centerPoint.lng + searchRadiusInLngDegrees &&
-      place.geometry.location.lng() < centerPoint.lng - searchRadiusInLngDegrees
+      place.geometry.location.lng() > centerPoint.lng - searchRadiusInLngDegrees
     );
   });
 }

@@ -16,8 +16,10 @@ import { getCurrentLocation } from './api/getCurrentLocation';
 
 // Bugs:
 // putting 'newark' into place search box returns no results from Maps text search
+// don't allow user to not input time to location and ensure it's integer in minutes
 
 // To do:
+// make it so cafes are close to playgrounds
 // have box open when clicking marker with details and photo?. Also highlight relevant text in card
 // Misc: incorporate number of reviews into order, say if no results so know it's working, format tables so columns are aligned
 // format places: location, snippet, (photo?)
@@ -101,6 +103,8 @@ class App extends Component {
       location: null,
       locationTextBoxValue: '',
       locationCoords: null,
+      proximityMinutes: null,
+      travelMethod: null,
     };
 
     this.initMap = this.initMap.bind(this);
@@ -140,7 +144,7 @@ class App extends Component {
     });
   }
 
-  async updateListings() {
+  async updateListings(searchRadius) {
     let placeMarkersArray, placeLabelsAndUrlArray;
 
     // clear markers
@@ -158,10 +162,14 @@ class App extends Component {
     [
       placeLabelsAndUrlArray,
       placeMarkersArray,
-    ] = await getPlacesAndUpdateListings(this.state.map, {
-      lat: this.state.map.getCenter().lat(),
-      lng: this.state.map.getCenter().lng(),
-    });
+    ] = await getPlacesAndUpdateListings(
+      this.state.map,
+      {
+        lat: this.state.map.getCenter().lat(),
+        lng: this.state.map.getCenter().lng(),
+      },
+      searchRadius,
+    );
 
     this.setState({
       markers: [...placeMarkersArray],
@@ -205,9 +213,6 @@ class App extends Component {
 
   locationBtnClicked = async evt => {
     const map = this.state.map;
-    // if this.state.locationCoords is not defined, do a Google Maps text search for the string in this.state.locationTextBoxValue
-    // if no result returned, tell user place not found and/or default to somewhere
-
     const centerCoords = await this.getCenterCoords(evt, map);
 
     this.setState({
@@ -217,8 +222,6 @@ class App extends Component {
     map.panTo(centerCoords);
     map.setCenter(centerCoords);
     map.setZoom(13);
-
-    this.updateListings();
   };
 
   getCenterCoords = (evt, map) => {
@@ -253,6 +256,37 @@ class App extends Component {
         resolve(this.state.locationCoords);
       }
     });
+  };
+
+  proximityMinutesTextBoxChanged = evt => {
+    this.setState({
+      proximityMinutes: evt.target.value,
+    });
+  };
+
+  proximityBtnClicked = evt => {
+    this.setState({
+      travelMethod: evt.target.name,
+    });
+    const searchRadius = this.distanceCalculation(evt.target.name);
+    this.updateListings(searchRadius);
+  };
+
+  distanceCalculation = travelMethod => {
+    const speedOfTransportInMetresPerHr = {
+      walk: 5000,
+      cycle: 15000,
+      car: 50000,
+      publicTransport: 30000,
+    };
+
+    const searchRadius = (
+      (speedOfTransportInMetresPerHr[travelMethod] *
+        this.state.proximityMinutes) /
+      60
+    ).toString();
+
+    return searchRadius;
   };
 
   render() {
@@ -321,7 +355,53 @@ class App extends Component {
             </Card>
           )}
 
-          {this.state.location && (
+          {this.state.eventDate &&
+            this.state.location &&
+            !this.state.travelMethod && (
+              <Card id="welcome-card">
+                <CardBody>
+                  <CardText>How close should it be?</CardText>
+                  <Input
+                    type="text"
+                    name="proximityMinutes"
+                    id="proximityMinutesTextBox"
+                    placeholder=""
+                    value={this.state.proximityMinutes}
+                    onChange={this.proximityMinutesTextBoxChanged}
+                  />
+                  <Button
+                    className="button"
+                    onClick={this.proximityBtnClicked}
+                    name="walk"
+                  >
+                    Walk
+                  </Button>
+                  <Button
+                    className="button"
+                    onClick={this.proximityBtnClicked}
+                    name="cycle"
+                  >
+                    Cycle
+                  </Button>
+                  <Button
+                    className="button"
+                    onClick={this.proximityBtnClicked}
+                    name="car"
+                  >
+                    Car
+                  </Button>
+                  <Button
+                    className="button"
+                    onClick={this.proximityBtnClicked}
+                    name="publicTransport"
+                  >
+                    Public transport
+                  </Button>
+                </CardBody>
+              </Card>
+            )}
+
+          {this.state.travelMethod && (
             <div id="cardTable-container">
               <CardTable
                 cardId="cafe-results-card"

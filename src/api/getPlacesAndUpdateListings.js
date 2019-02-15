@@ -3,11 +3,15 @@ import { getPlaceUrl } from './getPlaceUrl.js';
 const globalCafeQuery = 'kid friendly coffee shop'; // Google Maps text query for cafes
 const globalKidsActivityQuery = 'playground'; // Google Maps text query for kids activities
 
-export async function getPlacesAndUpdateListings(map, mapCenter) {
+export async function getPlacesAndUpdateListings(map, mapCenter, searchRadius) {
   let placeAndLabelsArray, markerArray;
   console.log('2) refreshPlacesAndUpdateListings starting...');
 
-  const filteredPlacesArray = await refreshNearbyPlaces(map, mapCenter);
+  const filteredPlacesArray = await refreshNearbyPlaces(
+    map,
+    mapCenter,
+    searchRadius,
+  );
   [placeAndLabelsArray, markerArray] = addMarkers(filteredPlacesArray, map);
   console.log('3) placeLabelsArray: ...');
   let placeLabelsAndUrlArray = await getPlaceUrl(placeAndLabelsArray, map);
@@ -17,9 +21,10 @@ export async function getPlacesAndUpdateListings(map, mapCenter) {
   return [placeLabelsAndUrlArray, markerArray];
 }
 
-async function refreshNearbyPlaces(map, mapCenter) {
+async function refreshNearbyPlaces(map, mapCenter, searchRadius) {
+  console.log('searchRadius = ' + searchRadius);
+  console.log(typeof searchRadius);
   const centerPoint = mapCenter;
-  const searchRadius = '2000';
   const cafeRequest = {
     query: globalCafeQuery,
     location: centerPoint,

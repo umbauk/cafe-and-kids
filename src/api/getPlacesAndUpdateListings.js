@@ -21,43 +21,64 @@ export async function getPlacesAndUpdateListings(map, mapCenter, searchRadius) {
   return [placeLabelsAndUrlArray, markerArray];
 }
 
+function MapSearchRequest(query, location, radius, placeType) {
+  this.query = query;
+  this.location = location;
+  this.radius = radius;
+  this.placeType = placeType;
+}
+
 async function refreshNearbyPlaces(map, mapCenter, searchRadius) {
-  console.log('searchRadius = ' + searchRadius);
-  console.log(typeof searchRadius);
   const centerPoint = mapCenter;
-  const cafeRequest = {
-    query: globalCafeQuery,
-    location: centerPoint,
-    radius: searchRadius,
-    //type: ['cafe'],
-    placeType: 'cafe',
-  };
-
-  const kidsActivityRequest = {
-    query: globalKidsActivityQuery,
-    location: centerPoint,
-    radius: searchRadius,
-    //type: ['park'],
-    placeType: 'kids activity',
-  };
-
-  const service = new google.maps.places.PlacesService(map);
-
-  let cafeList = getPlacesList(service, cafeRequest);
-  let kidsActivityList = getPlacesList(service, kidsActivityRequest);
-
-  const placesArray = [await cafeList, await kidsActivityList];
-  const flattenedPlacesArray = [].concat(...placesArray);
-  const highRatedPlacesArray = filterOutLowRatedPlaces(flattenedPlacesArray);
-  const filteredPlacesArray = checkPlaceIsWithinRadius(
+  const kidsActivityRequest = new MapSearchRequest(
+    globalKidsActivityQuery,
     centerPoint,
     searchRadius,
-    highRatedPlacesArray,
+    //type: ['park'],
+    'kids activity',
   );
-  const sortedPlacesArray = sortByRating(filteredPlacesArray);
-  const limitedPlacesArray = limitNumberOfPlaces(sortedPlacesArray, 5);
-  return new Promise(resolve => {
-    resolve(limitedPlacesArray);
+
+  const service = new google.maps.places.PlacesService(map);
+  let kidsActivityList = getPlacesList(service, kidsActivityRequest);
+  const kidsActivityPlaceArray = await kidsActivityList;
+  const highRatedKidsPlacesArray = filterOutLowRatedPlaces(
+    kidsActivityPlaceArray,
+  );
+  const withinRadiusKidsPlacesArray = checkPlaceIsWithinRadius(
+    centerPoint,
+    searchRadius,
+    highRatedKidsPlacesArray,
+  );
+  const sortedKidsPlacesArray = sortByRating(withinRadiusKidsPlacesArray);
+  const limitedKidsPlacesArray = limitNumberOfPlaces(sortedKidsPlacesArray, 5);
+
+  // for each kids activity place, find a cafe next to it
+  const limitedCafePlacesArray = limitedKidsPlacesArray.map(kidsPlace => {
+    const cafeRequest = new MapSearchRequest(
+      globalCafeQuery,
+      kidsPlace.geometry.location,
+      1000,
+      'cafe',
+    );
+    return new Promise(async (resolve, reject) => {
+      let cafeList = await getPlacesList(service, cafeRequest);
+      const highRatedCafesArray = filterOutLowRatedPlaces(cafeList);
+      const withinRadiusCafesArray = checkPlaceIsWithinRadius(
+        centerPoint,
+        searchRadius,
+        highRatedCafesArray,
+      );
+      const sortedCafesArray = sortByRating(withinRadiusCafesArray);
+      const topRatedCafe = limitNumberOfPlaces(sortedCafesArray, 1);
+      resolve(topRatedCafe);
+    });
+  });
+
+  return Promise.all(limitedCafePlacesArray).then(limitedCafePlacesArray => {
+    const flattenedPlacesArray = limitedKidsPlacesArray.concat(
+      ...limitedCafePlacesArray,
+    );
+    return Promise.resolve(flattenedPlacesArray);
   });
 }
 
@@ -87,7 +108,7 @@ function filterOutLowRatedPlaces(flattenedPlacesArray) {
 function checkPlaceIsWithinRadius(
   centerPoint,
   searchRadius,
-  highRatedPlacesArray,
+  highRatedKidsPlacesArray,
 ) {
   // Converts radius in metres to distance in lat/lng
   const searchRadiusInLatDegrees = parseInt(searchRadius) / 1000 / 110.574;
@@ -96,7 +117,7 @@ function checkPlaceIsWithinRadius(
     1000 /
     (Math.cos((centerPoint.lat * Math.PI) / 180) * 111.32);
 
-  return highRatedPlacesArray.filter(place => {
+  return highRatedKidsPlacesArray.filter(place => {
     return (
       place.geometry.location.lat() <
         centerPoint.lat + searchRadiusInLatDegrees &&
@@ -113,13 +134,13 @@ function sortByRating(filteredPlacesArray) {
   return filteredPlacesArray.sort((a, b) => b.rating - a.rating);
 }
 
-function limitNumberOfPlaces(sortedPlacesArray, limit) {
+function limitNumberOfPlaces(sortedKidsPlacesArray, limit) {
   // Limits number of results per type to 'limit'
-  return sortedPlacesArray
+  return sortedKidsPlacesArray
     .filter(place => place.placeType === 'cafe')
     .slice(0, limit)
     .concat(
-      sortedPlacesArray
+      sortedKidsPlacesArray
         .filter(place => place.placeType === 'kids activity')
         .slice(0, limit),
     );

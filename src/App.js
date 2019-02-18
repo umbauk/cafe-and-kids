@@ -16,7 +16,6 @@ import { getCurrentLocation } from './api/getCurrentLocation';
 
 // Bugs:
 // putting 'newark' into place search box returns no results from Maps text search
-// don't allow user to not input time to location and ensure it's integer in minutes
 
 // To do:
 // avoid duplicate cafes
@@ -63,7 +62,7 @@ const ResultsTable = ({ placeResultsArray }) => (
     </thead>
     <tbody>
       {placeResultsArray.map(place => (
-        <tr>
+        <tr key={place.label}>
           <th scope="row">{place.label}</th>
           <td>
             <a target="_blank" rel="noopener noreferrer" href={place.url}>
@@ -264,11 +263,17 @@ class App extends Component {
   };
 
   proximityBtnClicked = evt => {
-    this.setState({
-      travelMethod: evt.target.name,
-    });
-    const searchRadius = this.distanceCalculation(evt.target.name);
-    this.updateListings(searchRadius);
+    console.log(this.state.proximityMinutes);
+    if (!this.state.proximityMinutes > 0) {
+      // user has not entered a number in the input field
+      alert('Please enter a number');
+    } else {
+      this.setState({
+        travelMethod: evt.target.name,
+      });
+      const searchRadius = this.distanceCalculation(evt.target.name);
+      this.updateListings(searchRadius);
+    }
   };
 
   distanceCalculation = travelMethod => {

@@ -5,7 +5,7 @@ const globalKidsActivityQuery = 'playground'; // Google Maps text query for kids
 
 export async function getPlacesAndUpdateListings(map, mapCenter, searchRadius) {
   let placeAndLabelsArray, markerArray;
-  console.log('2) refreshPlacesAndUpdateListings starting...');
+  console.log('2) getPlacesAndUpdateListings starting...');
 
   const filteredPlacesArray = await refreshNearbyPlaces(
     map,
@@ -53,50 +53,20 @@ async function refreshNearbyPlaces(map, mapCenter, searchRadius) {
   );
   const sortedKidsPlacesArray = sortByRating(withinRadiusKidsPlacesArray);
   const limitedKidsPlacesArray = limitNumberOfPlaces(sortedKidsPlacesArray, 5);
-  const cafeDistanceFromActivity = '1000'; // meters
 
-  // for each kids activity place, find a cafe next to it
-  const limitedCafePlacesArray = limitedKidsPlacesArray.map(kidsPlace => {
-    const cafeRequest = new MapSearchRequest(
-      globalCafeQuery,
-      kidsPlace.geometry.location,
-      cafeDistanceFromActivity,
-      'cafe',
-    );
-    return new Promise(async (resolve, reject) => {
-      let cafeList = await getPlacesList(service, cafeRequest);
-      const highRatedCafesArray = filterOutLowRatedPlaces(cafeList);
-      const withinRadiusCafesArray = checkPlaceIsWithinRadius(
-        {
-          lat: kidsPlace.geometry.location.lat(),
-          lng: kidsPlace.geometry.location.lng(),
-        },
-        cafeDistanceFromActivity,
-        highRatedCafesArray,
+  return getCafesArray(limitedKidsPlacesArray, service).then(
+    limitedCafePlacesArray => {
+      const flattenedPlacesArray = limitedKidsPlacesArray.concat(
+        ...limitedCafePlacesArray,
       );
-      const sortedCafesArray = sortByRating(withinRadiusCafesArray);
-      const topRatedCafe = limitNumberOfPlaces(sortedCafesArray, 1);
-      resolve(topRatedCafe);
-    });
-  });
-
-  //console.log(await getCafesArray(limitedKidsPlacesArray, service));
-  return Promise.all(limitedCafePlacesArray).then(limitedCafePlacesArray => {
-    console.log('getCafesArray finished');
-    const flattenedPlacesArray = limitedKidsPlacesArray.concat(
-      ...limitedCafePlacesArray,
-    );
-    console.log(flattenedPlacesArray);
-    return Promise.resolve(flattenedPlacesArray);
-  });
+      return Promise.resolve(flattenedPlacesArray);
+    },
+  );
 }
 
-/*async function getCafesArray(limitedKidsPlacesArray, service) {
-  console.log('getCafesArray running');
-  console.log(limitedKidsPlacesArray);
-  console.log(limitedKidsPlacesArray[0].geometry.location);
-  return limitedKidsPlacesArray.map(kidsPlace => {
-    const searchRadiusInMeters = '5000';
+async function getCafesArray(limitedKidsPlacesArray, service) {
+  let promiseArray = limitedKidsPlacesArray.map(kidsPlace => {
+    const searchRadiusInMeters = '1000';
     const cafeRequest = new MapSearchRequest(
       globalCafeQuery,
       kidsPlace.geometry.location,
@@ -105,7 +75,6 @@ async function refreshNearbyPlaces(map, mapCenter, searchRadius) {
     );
     return new Promise(async (resolve, reject) => {
       let cafeList = await getPlacesList(service, cafeRequest);
-      console.log('got here');
       const highRatedCafesArray = filterOutLowRatedPlaces(cafeList);
       const withinRadiusCafesArray = checkPlaceIsWithinRadius(
         {
@@ -120,12 +89,10 @@ async function refreshNearbyPlaces(map, mapCenter, searchRadius) {
       resolve(topRatedCafe);
     });
   });
-  /*console.log(limitedCafePlacesArray);
-  return Promise.all(limitedCafePlacesArray).then(limitedCafePlacesArray => {
-    console.log('limitedCafePlaces Array complete');
+  return Promise.all(promiseArray).then(limitedCafePlacesArray => {
     return Promise.resolve(limitedCafePlacesArray);
   });
-}*/
+}
 
 function getPlacesList(service, request) {
   return new Promise((resolve, reject) => {

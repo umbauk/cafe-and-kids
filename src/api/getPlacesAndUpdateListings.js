@@ -21,11 +21,13 @@ export async function getPlacesAndUpdateListings(map, mapCenter, searchRadius) {
   return [placeLabelsAndUrlArray, markerArray];
 }
 
-function MapSearchRequest(query, location, radius, placeType) {
-  this.query = query;
-  this.location = location;
-  this.radius = radius;
-  this.placeType = placeType;
+class MapSearchRequest {
+  constructor(query, location, radius, placeType) {
+    this.query = query;
+    this.location = location;
+    this.radius = radius;
+    this.placeType = placeType;
+  }
 }
 
 async function refreshNearbyPlaces(map, mapCenter, searchRadius) {
@@ -51,21 +53,25 @@ async function refreshNearbyPlaces(map, mapCenter, searchRadius) {
   );
   const sortedKidsPlacesArray = sortByRating(withinRadiusKidsPlacesArray);
   const limitedKidsPlacesArray = limitNumberOfPlaces(sortedKidsPlacesArray, 5);
+  const cafeDistanceFromActivity = '1000'; // meters
 
   // for each kids activity place, find a cafe next to it
   const limitedCafePlacesArray = limitedKidsPlacesArray.map(kidsPlace => {
     const cafeRequest = new MapSearchRequest(
       globalCafeQuery,
       kidsPlace.geometry.location,
-      1000,
+      cafeDistanceFromActivity,
       'cafe',
     );
     return new Promise(async (resolve, reject) => {
       let cafeList = await getPlacesList(service, cafeRequest);
       const highRatedCafesArray = filterOutLowRatedPlaces(cafeList);
       const withinRadiusCafesArray = checkPlaceIsWithinRadius(
-        centerPoint,
-        searchRadius,
+        {
+          lat: kidsPlace.geometry.location.lat(),
+          lng: kidsPlace.geometry.location.lng(),
+        },
+        cafeDistanceFromActivity,
         highRatedCafesArray,
       );
       const sortedCafesArray = sortByRating(withinRadiusCafesArray);
@@ -74,13 +80,52 @@ async function refreshNearbyPlaces(map, mapCenter, searchRadius) {
     });
   });
 
+  //console.log(await getCafesArray(limitedKidsPlacesArray, service));
   return Promise.all(limitedCafePlacesArray).then(limitedCafePlacesArray => {
+    console.log('getCafesArray finished');
     const flattenedPlacesArray = limitedKidsPlacesArray.concat(
       ...limitedCafePlacesArray,
     );
+    console.log(flattenedPlacesArray);
     return Promise.resolve(flattenedPlacesArray);
   });
 }
+
+/*async function getCafesArray(limitedKidsPlacesArray, service) {
+  console.log('getCafesArray running');
+  console.log(limitedKidsPlacesArray);
+  console.log(limitedKidsPlacesArray[0].geometry.location);
+  return limitedKidsPlacesArray.map(kidsPlace => {
+    const searchRadiusInMeters = '5000';
+    const cafeRequest = new MapSearchRequest(
+      globalCafeQuery,
+      kidsPlace.geometry.location,
+      searchRadiusInMeters,
+      'cafe',
+    );
+    return new Promise(async (resolve, reject) => {
+      let cafeList = await getPlacesList(service, cafeRequest);
+      console.log('got here');
+      const highRatedCafesArray = filterOutLowRatedPlaces(cafeList);
+      const withinRadiusCafesArray = checkPlaceIsWithinRadius(
+        {
+          lat: kidsPlace.geometry.location.lat(),
+          lng: kidsPlace.geometry.location.lng(),
+        },
+        searchRadiusInMeters,
+        highRatedCafesArray,
+      );
+      const sortedCafesArray = sortByRating(withinRadiusCafesArray);
+      const topRatedCafe = limitNumberOfPlaces(sortedCafesArray, 1);
+      resolve(topRatedCafe);
+    });
+  });
+  /*console.log(limitedCafePlacesArray);
+  return Promise.all(limitedCafePlacesArray).then(limitedCafePlacesArray => {
+    console.log('limitedCafePlaces Array complete');
+    return Promise.resolve(limitedCafePlacesArray);
+  });
+}*/
 
 function getPlacesList(service, request) {
   return new Promise((resolve, reject) => {

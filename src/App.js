@@ -19,7 +19,8 @@ import { getCurrentLocation } from './api/getCurrentLocation';
 // don't allow user to not input time to location and ensure it's integer in minutes
 
 // To do:
-// make it so cafes are close to playgrounds
+// avoid duplicate cafes
+// if walking or cycling, make cafe be closer to activity than car
 // have box open when clicking marker with details and photo?. Also highlight relevant text in card
 // Misc: incorporate number of reviews into order, say if no results so know it's working, format tables so columns are aligned
 // format places: location, snippet, (photo?)
@@ -43,9 +44,7 @@ import { getCurrentLocation } from './api/getCurrentLocation';
 const CardTable = ({ cardId, cardText, tableId, placeResultsArray }) => (
   <Card id={cardId}>
     <CardBody>
-      <CardText>
-        <h3>{cardText}</h3>
-      </CardText>
+      <CardText>{cardText}</CardText>
       {placeResultsArray && (
         <ResultsTable id={tableId} placeResultsArray={placeResultsArray} />
       )}
@@ -103,7 +102,7 @@ class App extends Component {
       location: null,
       locationTextBoxValue: '',
       locationCoords: null,
-      proximityMinutes: null,
+      proximityMinutes: '',
       travelMethod: null,
     };
 
@@ -404,17 +403,17 @@ class App extends Component {
           {this.state.travelMethod && (
             <div id="cardTable-container">
               <CardTable
-                cardId="cafe-results-card"
-                cardText="Cafe Results"
-                tableId="cafe-results-table"
-                placeResultsArray={this.state.cafeResults}
-              />
-
-              <CardTable
                 cardId="kids-activity-results-card"
                 cardText="Kids Activity Results"
                 tableId="kids-activity-results-table"
                 placeResultsArray={this.state.kidsActivityResults}
+              />
+
+              <CardTable
+                cardId="cafe-results-card"
+                cardText="Cafe Results"
+                tableId="cafe-results-table"
+                placeResultsArray={this.state.cafeResults}
               />
             </div>
           )}

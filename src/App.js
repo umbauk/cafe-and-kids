@@ -11,6 +11,7 @@ import {
 import './App.css';
 import { getPlacesAndUpdateListings } from './api/getPlacesAndUpdateListings';
 import { getCurrentLocation } from './api/getCurrentLocation';
+import { getWeather } from './api/getWeather';
 
 /* global google */
 
@@ -20,6 +21,7 @@ import { getCurrentLocation } from './api/getCurrentLocation';
 // To do:
 // avoid duplicate cafes
 // if walking or cycling, make cafe be closer to activity than car
+// implent with weather api to suggest indoor or outdoor activity
 // have box open when clicking marker with details and photo?. Also highlight relevant text in card
 // Misc: incorporate number of reviews into order, say if no results so know it's working, format tables so columns are aligned
 // format places: location, snippet, (photo?)
@@ -157,6 +159,9 @@ class App extends Component {
       },
       markers: [],
     });
+
+    console.log(await getWeather(this.state.map.getCenter()));
+
     [
       placeLabelsAndUrlArray,
       placeMarkersArray,
@@ -263,7 +268,6 @@ class App extends Component {
   };
 
   proximityBtnClicked = evt => {
-    console.log(this.state.proximityMinutes);
     if (!this.state.proximityMinutes > 0) {
       // user has not entered a number in the input field
       alert('Please enter a number');

@@ -3,10 +3,20 @@ import { getPlaceUrl } from './getPlaceUrl.js';
 const globalCafeQuery = 'kid friendly coffee shop'; // Google Maps text query for cafes
 const globalKidsActivityQuery = 'playground'; // Google Maps text query for kids activities
 
-export async function getPlacesAndUpdateListings(map, mapCenter, searchRadius) {
+export async function getPlacesAndUpdateListings(
+  map,
+  mapCenter,
+  searchRadius,
+  eventDate,
+  weatherJSON,
+) {
   let placeAndLabelsArray, markerArray;
   console.log('2) getPlacesAndUpdateListings starting...');
 
+  let indoorOrOutdoorActivity = shouldActivityBeIndoorOrOutdoor(
+    eventDate,
+    weatherJSON,
+  );
   const filteredPlacesArray = await refreshNearbyPlaces(
     map,
     mapCenter,
@@ -15,9 +25,8 @@ export async function getPlacesAndUpdateListings(map, mapCenter, searchRadius) {
   [placeAndLabelsArray, markerArray] = addMarkers(filteredPlacesArray, map);
   console.log('3) placeLabelsArray: ...');
   let placeLabelsAndUrlArray = await getPlaceUrl(placeAndLabelsArray, map);
-  await console.log('5) Writing to HTML');
 
-  console.log('6) refreshPlacesAndUpdateListings finished');
+  console.log('5) refreshPlacesAndUpdateListings finished');
   return [placeLabelsAndUrlArray, markerArray];
 }
 
@@ -27,6 +36,24 @@ class MapSearchRequest {
     this.location = location;
     this.radius = radius;
     this.placeType = placeType;
+  }
+}
+
+function shouldActivityBeIndoorOrOutdoor(eventDate, weatherJSON) {
+  // parse weatherJSON to get weather today and tomorrow
+  // need to receive date of activity into this function
+  console.log(weatherJSON);
+
+  // if eventDate = 'today' get all list items with same date as today and time between 9am and 6pm
+  // check them each for rain and if temp below 5 degrees C
+  // else get all list items for tomorrow and time between 9am and 6pm
+  // check them each for rain and if temp below 5 degrees C
+  const todaysDate = new Date();
+  if (eventDate === 'today') {
+    weatherJSON.list.filter(forecast => {
+      forecast.dt = new Date(forecast.dt);
+    });
+  } else if (eventDate === 'tomorrow') {
   }
 }
 

@@ -21,7 +21,7 @@ import { getWeather } from './api/getWeather';
 // To do:
 // avoid duplicate cafes
 // if walking or cycling, make cafe be closer to activity than car
-// implent with weather api to suggest indoor or outdoor activity
+// implement with weather api to suggest indoor or outdoor activity
 // have box open when clicking marker with details and photo?. Also highlight relevant text in card
 // Misc: incorporate number of reviews into order, say if no results so know it's working, format tables so columns are aligned
 // format places: location, snippet, (photo?)
@@ -160,7 +160,7 @@ class App extends Component {
       markers: [],
     });
 
-    console.log(await getWeather(this.state.map.getCenter()));
+    const weatherJSON = await getWeather(this.state.map.getCenter());
 
     [
       placeLabelsAndUrlArray,
@@ -172,6 +172,8 @@ class App extends Component {
         lng: this.state.map.getCenter().lng(),
       },
       searchRadius,
+      this.state.eventDate,
+      weatherJSON,
     );
 
     this.setState({

@@ -13,7 +13,7 @@ export async function getPlacesAndUpdateListings(
   let placeAndLabelsArray, markerArray;
   console.log('2) getPlacesAndUpdateListings starting...');
 
-  let indoorOrOutdoorActivity = shouldActivityBeIndoorOrOutdoor(
+  let activityShouldBeIndoors = shouldActivityBeIndoorOrOutdoor(
     eventDate,
     weatherJSON,
   );
@@ -40,21 +40,44 @@ class MapSearchRequest {
 }
 
 function shouldActivityBeIndoorOrOutdoor(eventDate, weatherJSON) {
-  // parse weatherJSON to get weather today and tomorrow
-  // need to receive date of activity into this function
   console.log(weatherJSON);
 
-  // if eventDate = 'today' get all list items with same date as today and time between 9am and 6pm
-  // check them each for rain and if temp below 5 degrees C
-  // else get all list items for tomorrow and time between 9am and 6pm
-  // check them each for rain and if temp below 5 degrees C
-  const todaysDate = new Date();
+  const today = new Date();
+  let tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const lowestTempForOutdoorActivity = 278;
+  const highestTempForOutdoorActivity = 308;
+  const maxRainInThreeHoursForOutdoorActivity = 7.5;
+  let eventDayForecast;
+  let activityShouldBeIndoors;
+
+  // Forecasts are every 3 hours. Get the forecasts that are for the day the user selected
   if (eventDate === 'today') {
-    weatherJSON.list.filter(forecast => {
-      forecast.dt = new Date(forecast.dt);
-    });
+    eventDayForecast = weatherJSON.list.filter(
+      forecast =>
+        new Date(forecast.dt * 1000).toDateString() === today.toDateString() &&
+        new Date(forecast.dt * 1000).getHours() >= 9 &&
+        new Date(forecast.dt * 1000).getHours() <= 18,
+    );
   } else if (eventDate === 'tomorrow') {
+    eventDayForecast = weatherJSON.list.filter(
+      forecast =>
+        new Date(forecast.dt * 1000).toDateString() ===
+          tomorrow.toDateString() &&
+        new Date(forecast.dt * 1000).getHours() >= 9 &&
+        new Date(forecast.dt * 1000).getHours() <= 18,
+    );
   }
+
+  for (let i = 0; i < eventDayForecast.length; i++) {
+    activityShouldBeIndoors =
+      eventDayForecast[i].rain['3h'] > maxRainInThreeHoursForOutdoorActivity
+        ? true
+        : false;
+  }
+
+  console.log(eventDayForecast);
+  console.log(`activity should be indoors: ${activityShouldBeIndoors}`);
 }
 
 async function refreshNearbyPlaces(map, mapCenter, searchRadius) {

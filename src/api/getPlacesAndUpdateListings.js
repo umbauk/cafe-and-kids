@@ -1,7 +1,6 @@
 import { getPlaceUrl } from './getPlaceUrl.js';
 /* global google */
 const globalCafeQuery = 'kid friendly coffee shop'; // Google Maps text query for cafes
-const globalKidsActivityQuery = 'playground'; // Google Maps text query for kids activities
 
 export async function getPlacesAndUpdateListings(
   map,
@@ -21,6 +20,7 @@ export async function getPlacesAndUpdateListings(
     map,
     mapCenter,
     searchRadius,
+    activityShouldBeIndoors,
   );
   [placeAndLabelsArray, markerArray] = addMarkers(filteredPlacesArray, map);
   console.log('3) placeLabelsArray: ...');
@@ -45,11 +45,7 @@ function shouldActivityBeIndoorOrOutdoor(eventDate, weatherJSON) {
   const today = new Date();
   let tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
-  const lowestTempForOutdoorActivity = 278;
-  const highestTempForOutdoorActivity = 308;
-  const maxRainInThreeHoursForOutdoorActivity = 7.5;
   let eventDayForecast;
-  let activityShouldBeIndoors;
 
   // Forecasts are every 3 hours. Get the forecasts that are for the day the user selected
   if (eventDate === 'today') {
@@ -69,21 +65,45 @@ function shouldActivityBeIndoorOrOutdoor(eventDate, weatherJSON) {
     );
   }
 
-  for (let i = 0; i < eventDayForecast.length; i++) {
-    activityShouldBeIndoors =
-      eventDayForecast[i].rain['3h'] > maxRainInThreeHoursForOutdoorActivity
-        ? true
-        : false;
-  }
+  const activityShouldBeIndoors = checkIfRainingOrTooCold(eventDayForecast);
 
-  console.log(eventDayForecast);
-  console.log(`activity should be indoors: ${activityShouldBeIndoors}`);
+  //console.log(eventDayForecast);
+  //console.log(`activity should be indoors: ${activityShouldBeIndoors}`);
+  return activityShouldBeIndoors;
 }
 
-async function refreshNearbyPlaces(map, mapCenter, searchRadius) {
+function checkIfRainingOrTooCold(eventDayForecast) {
+  const lowestTempForOutdoorActivity = 278;
+  const highestTempForOutdoorActivity = 308;
+  const maxRainInThreeHoursForOutdoorActivity = 7.5;
+
+  for (let i = 0; i < eventDayForecast.length; i++) {
+    if (
+      eventDayForecast[i].rain['3h'] > maxRainInThreeHoursForOutdoorActivity
+    ) {
+      return true;
+    } else if (
+      eventDayForecast[i].main.temp < lowestTempForOutdoorActivity ||
+      eventDayForecast[i].main.temp > highestTempForOutdoorActivity
+    ) {
+      return true;
+    }
+  }
+  return false;
+}
+
+async function refreshNearbyPlaces(
+  map,
+  mapCenter,
+  searchRadius,
+  activityShouldBeIndoors,
+) {
   const centerPoint = mapCenter;
+  let kidsActivityQuery = activityShouldBeIndoors
+    ? 'indoor play center'
+    : 'playground';
   const kidsActivityRequest = new MapSearchRequest(
-    globalKidsActivityQuery,
+    kidsActivityQuery,
     centerPoint,
     searchRadius,
     //type: ['park'],

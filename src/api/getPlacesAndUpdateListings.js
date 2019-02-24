@@ -8,6 +8,7 @@ export async function getPlacesAndUpdateListings(
   searchRadius,
   eventDate,
   weatherJSON,
+  travelMethod,
 ) {
   let placeAndLabelsArray, markerArray;
   console.log('2) getPlacesAndUpdateListings starting...');
@@ -21,6 +22,7 @@ export async function getPlacesAndUpdateListings(
     mapCenter,
     searchRadius,
     activityShouldBeIndoors,
+    travelMethod,
   );
   [placeAndLabelsArray, markerArray] = addMarkers(filteredPlacesArray, map);
   console.log('3) placeLabelsArray: ...');
@@ -78,10 +80,13 @@ function checkIfRainingOrTooCold(eventDayForecast) {
   const maxRainInThreeHoursForOutdoorActivity = 7.5;
 
   for (let i = 0; i < eventDayForecast.length; i++) {
-    if (
-      eventDayForecast[i].rain['3h'] > maxRainInThreeHoursForOutdoorActivity
-    ) {
-      return true;
+    // forecasts don't have rain elements if there is 0 rain forecast
+    if (eventDayForecast[i].rain) {
+      if (
+        eventDayForecast[i].rain['3h'] > maxRainInThreeHoursForOutdoorActivity
+      ) {
+        return true;
+      }
     } else if (
       eventDayForecast[i].main.temp < lowestTempForOutdoorActivity ||
       eventDayForecast[i].main.temp > highestTempForOutdoorActivity
@@ -97,6 +102,7 @@ async function refreshNearbyPlaces(
   mapCenter,
   searchRadius,
   activityShouldBeIndoors,
+  travelMethod,
 ) {
   const centerPoint = mapCenter;
   let kidsActivityQuery = activityShouldBeIndoors
@@ -124,7 +130,7 @@ async function refreshNearbyPlaces(
   const sortedKidsPlacesArray = sortByRating(withinRadiusKidsPlacesArray);
   const limitedKidsPlacesArray = limitNumberOfPlaces(sortedKidsPlacesArray, 5);
 
-  return getCafesArray(limitedKidsPlacesArray, service).then(
+  return getCafesArray(limitedKidsPlacesArray, service, travelMethod).then(
     limitedCafePlacesArray => {
       const flattenedPlacesArray = limitedKidsPlacesArray.concat(
         ...limitedCafePlacesArray,
@@ -134,9 +140,10 @@ async function refreshNearbyPlaces(
   );
 }
 
-async function getCafesArray(limitedKidsPlacesArray, service) {
+async function getCafesArray(limitedKidsPlacesArray, service, travelMethod) {
+  // shorten distance from activity to cafe if travelmethod is 'walk'
+  const searchRadiusInMeters = travelMethod === 'walk' ? '500' : '1000';
   let promiseArray = limitedKidsPlacesArray.map(kidsPlace => {
-    const searchRadiusInMeters = '1000';
     const cafeRequest = new MapSearchRequest(
       globalCafeQuery,
       kidsPlace.geometry.location,

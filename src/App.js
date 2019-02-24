@@ -17,11 +17,11 @@ import { getWeather } from './api/getWeather';
 
 // Bugs:
 // putting 'newark' into place search box returns no results from Maps text search
+// Dragging map and auto updating places is broken
 
 // To do:
 // avoid duplicate cafes
-// if walking or cycling, make cafe be closer to activity than car
-// implement with weather api to suggest indoor or outdoor activity
+// change text input for minutes to slider
 // have box open when clicking marker with details and photo?. Also highlight relevant text in card
 // Misc: incorporate number of reviews into order, say if no results so know it's working, format tables so columns are aligned
 // format places: location, snippet, (photo?)
@@ -105,6 +105,7 @@ class App extends Component {
       locationCoords: null,
       proximityMinutes: '',
       travelMethod: null,
+      searchRadius: null,
     };
 
     this.initMap = this.initMap.bind(this);
@@ -171,9 +172,10 @@ class App extends Component {
         lat: this.state.map.getCenter().lat(),
         lng: this.state.map.getCenter().lng(),
       },
-      searchRadius,
+      this.state.searchRadius || searchRadius,
       this.state.eventDate,
       weatherJSON,
+      this.state.travelMethod,
     );
 
     this.setState({
@@ -278,6 +280,9 @@ class App extends Component {
         travelMethod: evt.target.name,
       });
       const searchRadius = this.distanceCalculation(evt.target.name);
+      this.setState({
+        searchRadius: searchRadius,
+      });
       this.updateListings(searchRadius);
     }
   };
@@ -286,8 +291,8 @@ class App extends Component {
     const speedOfTransportInMetresPerHr = {
       walk: 5000,
       cycle: 15000,
-      car: 50000,
-      publicTransport: 30000,
+      car: 40000,
+      publicTransport: 20000,
     };
 
     const searchRadius = (
@@ -370,7 +375,9 @@ class App extends Component {
             !this.state.travelMethod && (
               <Card id="welcome-card">
                 <CardBody>
-                  <CardText>How close should it be?</CardText>
+                  <CardText>
+                    How long should it take to get there (minutes)?
+                  </CardText>
                   <Input
                     type="text"
                     name="proximityMinutes"
@@ -379,6 +386,7 @@ class App extends Component {
                     value={this.state.proximityMinutes}
                     onChange={this.proximityMinutesTextBoxChanged}
                   />
+                  By what method of transport?
                   <Button
                     className="button"
                     onClick={this.proximityBtnClicked}

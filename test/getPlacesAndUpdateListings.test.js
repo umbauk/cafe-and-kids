@@ -1,0 +1,1 @@
+const getPlacesAndUpdateListings = require('./api/getPlacesAndUpdateListings')

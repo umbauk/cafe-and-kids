@@ -17,11 +17,11 @@ import { getWeather } from './api/getWeather';
 
 // Bugs:
 // putting 'newark' into place search box returns no results from Maps text search
-// Dragging map and auto updating places is broken
 
 // To do:
 // avoid duplicate cafes
 // change text input for minutes to slider
+// Weather forecast dates are returned in UTC rather than local time. Need to adjust to local time
 // have box open when clicking marker with details and photo?. Also highlight relevant text in card
 // Misc: incorporate number of reviews into order, say if no results so know it's working, format tables so columns are aligned
 // format places: location, snippet, (photo?)
@@ -106,6 +106,7 @@ class App extends Component {
       proximityMinutes: '',
       travelMethod: null,
       searchRadius: null,
+      activityShouldbeIndoors: null,
     };
 
     this.initMap = this.initMap.bind(this);
@@ -146,7 +147,7 @@ class App extends Component {
   }
 
   async updateListings(searchRadius) {
-    let placeMarkersArray, placeLabelsAndUrlArray;
+    let placeMarkersArray, placeLabelsAndUrlArray, activityShouldbeIndoors;
 
     // clear markers
     this.state.markers.forEach(marker => {
@@ -166,6 +167,7 @@ class App extends Component {
     [
       placeLabelsAndUrlArray,
       placeMarkersArray,
+      activityShouldbeIndoors,
     ] = await getPlacesAndUpdateListings(
       this.state.map,
       {
@@ -186,6 +188,7 @@ class App extends Component {
       kidsActivityResults: placeLabelsAndUrlArray.filter(
         element => element.placeType === 'kids activity',
       ),
+      activityShouldbeIndoors: activityShouldbeIndoors,
     });
   }
 
@@ -290,7 +293,7 @@ class App extends Component {
   distanceCalculation = travelMethod => {
     const speedOfTransportInMetresPerHr = {
       walk: 5000,
-      cycle: 15000,
+      cycle: 10000,
       car: 40000,
       publicTransport: 20000,
     };
@@ -421,13 +424,17 @@ class App extends Component {
 
           {this.state.travelMethod && (
             <div id="cardTable-container">
+              {this.state.activityShouldbeIndoors
+                ? `Weather is going to be ${
+                    this.state.activityShouldbeIndoors
+                  } to be outdoors. Returning Indoor options.`
+                : 'Weather is going to be fine for outdoor play!'}
               <CardTable
                 cardId="kids-activity-results-card"
                 cardText="Kids Activity Results"
                 tableId="kids-activity-results-table"
                 placeResultsArray={this.state.kidsActivityResults}
               />
-
               <CardTable
                 cardId="cafe-results-card"
                 cardText="Cafe Results"

@@ -13,10 +13,16 @@ export async function getPlacesAndUpdateListings(
   let placeAndLabelsArray, markerArray;
   console.log('2) getPlacesAndUpdateListings starting...');
 
-  let activityShouldBeIndoors = shouldActivityBeIndoorOrOutdoor(
+  let eventDayWeatherForecast = getEventDayWeatherForecast(
     eventDate,
     weatherJSON,
   );
+
+  // if weather is too bad to be outdoors returns why, else returns false
+  const activityShouldBeIndoors = checkIfRainingOrTooCold(
+    eventDayWeatherForecast,
+  );
+
   const filteredPlacesArray = await refreshNearbyPlaces(
     map,
     mapCenter,
@@ -29,7 +35,7 @@ export async function getPlacesAndUpdateListings(
   let placeLabelsAndUrlArray = await getPlaceUrl(placeAndLabelsArray, map);
 
   console.log('5) refreshPlacesAndUpdateListings finished');
-  return [placeLabelsAndUrlArray, markerArray];
+  return [placeLabelsAndUrlArray, markerArray, activityShouldBeIndoors];
 }
 
 class MapSearchRequest {
@@ -41,15 +47,13 @@ class MapSearchRequest {
   }
 }
 
-function shouldActivityBeIndoorOrOutdoor(eventDate, weatherJSON) {
-  console.log(weatherJSON);
-
+function getEventDayWeatherForecast(eventDate, weatherJSON) {
   const today = new Date();
   let tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
   let eventDayForecast;
 
-  // Forecasts are every 3 hours. Get the forecasts that are for the day the user selected
+  // Forecasts are every 3 hours in UNIX UTC datetime. Get the forecasts that are for the day the user selected
   if (eventDate === 'today') {
     eventDayForecast = weatherJSON.list.filter(
       forecast =>
@@ -67,17 +71,13 @@ function shouldActivityBeIndoorOrOutdoor(eventDate, weatherJSON) {
     );
   }
 
-  const activityShouldBeIndoors = checkIfRainingOrTooCold(eventDayForecast);
-
-  //console.log(eventDayForecast);
-  //console.log(`activity should be indoors: ${activityShouldBeIndoors}`);
-  return activityShouldBeIndoors;
+  return eventDayForecast;
 }
 
 function checkIfRainingOrTooCold(eventDayForecast) {
-  const lowestTempForOutdoorActivity = 278;
-  const highestTempForOutdoorActivity = 308;
-  const maxRainInThreeHoursForOutdoorActivity = 7.5;
+  const lowestTempForOutdoorActivity = 278; // kelvins = 5 degress celsius
+  const highestTempForOutdoorActivity = 303; // kelvins = 30 degress celsius
+  const maxRainInThreeHoursForOutdoorActivity = 7.5; // mm
 
   for (let i = 0; i < eventDayForecast.length; i++) {
     // forecasts don't have rain elements if there is 0 rain forecast
@@ -85,13 +85,13 @@ function checkIfRainingOrTooCold(eventDayForecast) {
       if (
         eventDayForecast[i].rain['3h'] > maxRainInThreeHoursForOutdoorActivity
       ) {
-        return true;
+        return 'too rainy';
       }
-    } else if (
-      eventDayForecast[i].main.temp < lowestTempForOutdoorActivity ||
-      eventDayForecast[i].main.temp > highestTempForOutdoorActivity
-    ) {
-      return true;
+    }
+    if (eventDayForecast[i].main.temp > highestTempForOutdoorActivity) {
+      return 'too hot';
+    } else if (eventDayForecast[i].main.temp < lowestTempForOutdoorActivity) {
+      return 'too cold';
     }
   }
   return false;

@@ -8,6 +8,7 @@ import {
   Input,
   Table,
 } from 'reactstrap';
+import Slider from './Slider.js';
 import './App.css';
 import { getPlacesAndUpdateListings } from './api/getPlacesAndUpdateListings';
 import { getCurrentLocation } from './api/getCurrentLocation';
@@ -17,11 +18,11 @@ import { getWeather } from './api/getWeather';
 
 // Bugs:
 // putting 'newark' into place search box returns no results from Maps text search
+// Seattle doesn't return any cafes or playgrounds
 
 // To do:
 // avoid duplicate cafes
 // change text input for minutes to slider
-// Weather forecast dates are returned in UTC rather than local time. Need to adjust to local time
 // have box open when clicking marker with details and photo?. Also highlight relevant text in card
 // Misc: incorporate number of reviews into order, say if no results so know it's working, format tables so columns are aligned
 // format places: location, snippet, (photo?)
@@ -381,6 +382,7 @@ class App extends Component {
                   <CardText>
                     How long should it take to get there (minutes)?
                   </CardText>
+                  <Slider />
                   <Input
                     type="text"
                     name="proximityMinutes"

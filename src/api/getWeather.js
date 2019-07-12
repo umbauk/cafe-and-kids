@@ -1,4 +1,5 @@
-const KEY = 'c0015c7da948e2feeea7c878cc929a9c';
+import Config from '../config.js';
+const KEY = Config.passwords.OPEN_WEATHER_KEY;
 
 export function getWeather(coords) {
   return fetch(

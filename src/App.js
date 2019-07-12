@@ -14,12 +14,11 @@ import { getPlacesAndUpdateListings } from './api/getPlacesAndUpdateListings';
 import { getCurrentLocation } from './api/getCurrentLocation';
 import { getWeather } from './api/getWeather';
 import { lookupPlaceName } from './api/lookupPlaceName';
+import Config from './config.js';
 
 /* global google */
 
 // Bugs:
-// putting 'newark' into place search box returns no results from Maps text search
-// Seattle doesn't return any cafes or playgrounds
 
 // To do:
 // avoid duplicate cafes
@@ -121,8 +120,9 @@ class App extends Component {
     // so Google Maps can invoke it
     window.initMap = this.initMap;
     // Asynchronously load the Google Maps script, passing in the callback reference
+    const KEY = Config.passwords.GOOGLE_API_KEY;
     loadJS(
-      'https://maps.googleapis.com/maps/api/js?key=AIzaSyBoKmshPxsNC3n5M88_BKq2I_IJgiVx47g&libraries=places&callback=initMap',
+      `https://maps.googleapis.com/maps/api/js?key=${KEY}&libraries=places&callback=initMap`,
     );
   }
 
@@ -231,7 +231,6 @@ class App extends Component {
     this.setState({
       location: 1,
     });
-    console.log(centerCoords);
     map.panTo(centerCoords);
     map.setCenter(centerCoords);
     map.setZoom(13);

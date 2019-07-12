@@ -3,13 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@material-ui/core": "^3.9.2",
+    "@material-ui/core": "^3.9.3",
     "@material-ui/lab": "^3.0.0-alpha.30",
     "bootstrap": "^4.2.1",
-    "node-fetch": "^2.3.0",
-    "react": "^16.7.0",
-    "react-dom": "^16.7.0",
-    "react-scripts": "^2.1.5",
+    "node-fetch": "^2.6.0",
+    "react": "^16.8.6",
+    "react-dom": "^16.8.6",
+    "react-scripts": "^3.0.1",
     "reactstrap": "^7.1.0"
   },
   "scripts": {
@@ -29,5 +29,7 @@
     "not dead",
     "not ie <= 11",
     "not op_mini all"
-  ]
+  ],
+  "homepage": "https://www.darrengreenfield.com/play-and-coffee",
+  "devDependencies": {}
 }

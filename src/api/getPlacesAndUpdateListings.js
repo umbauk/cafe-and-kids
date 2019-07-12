@@ -40,7 +40,7 @@ export async function getPlacesAndUpdateListings(
   );
   [placeAndLabelsArray, markerArray] = addMarkers(filteredPlacesArray, map);
   console.log('3) placeLabelsArray: ...');
-  let placeLabelsAndUrlArray = await getPlaceUrl(placeAndLabelsArray, map);
+  let placeLabelsAndUrlArray = await getPlaceUrl(placeAndLabelsArray);
 
   console.log('5) refreshPlacesAndUpdateListings finished');
   return [placeLabelsAndUrlArray, markerArray, activityShouldBeIndoors];

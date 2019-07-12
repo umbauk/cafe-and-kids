@@ -13,17 +13,18 @@ const styles = {
 };
 
 class StepSlider extends React.Component {
-  state = {
-    value: 3,
-  };
+  constructor(props) {
+    super(props);
+    this.handleChange = this.handleChange.bind(this);
+  }
 
   handleChange = (event, value) => {
-    this.setState({ value });
+    this.props.onSliderChange(value);
   };
 
   render() {
     const { classes } = this.props;
-    const { value } = this.state;
+    const { value } = this.props.value;
 
     return (
       <div className={classes.root}>
@@ -31,7 +32,7 @@ class StepSlider extends React.Component {
           classes={{ container: classes.slider }}
           value={value}
           min={0}
-          max={6}
+          max={60}
           step={1}
           onChange={this.handleChange}
         />
@@ -42,6 +43,8 @@ class StepSlider extends React.Component {
 
 StepSlider.propTypes = {
   classes: PropTypes.object.isRequired,
+  value: PropTypes.number,
+  onSliderChange: PropTypes.func.isRequired,
 };
 
 export default withStyles(styles)(StepSlider);

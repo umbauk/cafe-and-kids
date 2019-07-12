@@ -13,6 +13,7 @@ import './App.css';
 import { getPlacesAndUpdateListings } from './api/getPlacesAndUpdateListings';
 import { getCurrentLocation } from './api/getCurrentLocation';
 import { getWeather } from './api/getWeather';
+import { lookupPlaceName } from './api/lookupPlaceName';
 
 /* global google */
 
@@ -108,6 +109,7 @@ class App extends Component {
       travelMethod: null,
       searchRadius: null,
       activityShouldbeIndoors: null,
+      travelMinutes: 20,
     };
 
     this.initMap = this.initMap.bind(this);
@@ -237,31 +239,17 @@ class App extends Component {
 
   getCenterCoords = (evt, map) => {
     return new Promise(async (resolve, reject) => {
-      let centerCoords;
+      //let centerCoords;
       if (evt.target.name === 'useCurrentLocation') {
         resolve(await getCurrentLocation());
       } else if (!this.state.locationCoords) {
         // if place not selected from Maps autocomplete dropdown list, user has typed in place manually
-        const service = new google.maps.places.PlacesService(map);
-        console.log(`query: ${this.state.locationTextBoxValue}`);
-        await service.textSearch(
-          {
-            query: this.state.locationTextBoxValue,
-          },
-          (results, status) => {
-            console.log('results');
-            console.log(results);
-            if (status === google.maps.places.PlacesServiceStatus.OK) {
-              centerCoords = results[0].geometry.location;
-              resolve(centerCoords);
-            } else {
-              // revert to default center
-              alert('Place not found');
-              console.log(status);
-              centerCoords = this.state.center;
-              resolve(centerCoords);
-            }
-          },
+        resolve(
+          await lookupPlaceName(
+            map,
+            this.state.locationTextBoxValue,
+            this.state.center, // default value
+          ),
         );
       } else {
         resolve(this.state.locationCoords);
@@ -306,6 +294,10 @@ class App extends Component {
     ).toString();
 
     return searchRadius;
+  };
+
+  handleTravelMinutesChange = value => {
+    this.setState({ travelMinutes: value });
   };
 
   render() {
@@ -382,7 +374,10 @@ class App extends Component {
                   <CardText>
                     How long should it take to get there (minutes)?
                   </CardText>
-                  <Slider />
+                  <Slider
+                    value={this.state.travelMinutes}
+                    onSliderChange={this.handleTravelMinutesChange}
+                  />
                   <Input
                     type="text"
                     name="proximityMinutes"

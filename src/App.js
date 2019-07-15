@@ -14,7 +14,8 @@ import { getPlacesAndUpdateListings } from './api/getPlacesAndUpdateListings';
 import { getCurrentLocation } from './api/getCurrentLocation';
 import { getWeather } from './api/getWeather';
 import { lookupPlaceName } from './api/lookupPlaceName';
-import Config from './config.js';
+import Config from './config.js'; // API Keys
+import loadJS from './loadJS.js'; // loads Google Maps API script
 
 /* global google */
 
@@ -78,14 +79,6 @@ const ResultsTable = ({ placeResultsArray }) => (
     </tbody>
   </Table>
 );
-
-function loadJS(src) {
-  var ref = window.document.getElementsByTagName('script')[0];
-  var script = window.document.createElement('script');
-  script.src = src;
-  script.async = true;
-  ref.parentNode.insertBefore(script, ref);
-}
 
 class App extends Component {
   constructor(props) {

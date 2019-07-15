@@ -5,12 +5,17 @@
   "dependencies": {
     "@material-ui/core": "^3.9.3",
     "@material-ui/lab": "^3.0.0-alpha.30",
+    "@types/jest": "^24.0.15",
     "bootstrap": "^4.2.1",
+    "g": "^2.0.1",
+    "jsdom": "^15.1.1",
     "node-fetch": "^2.6.0",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
     "react-scripts": "^3.0.1",
-    "reactstrap": "^7.1.0"
+    "react-test-renderer": "^16.8.6",
+    "reactstrap": "^7.1.0",
+    "yarn": "^1.17.3"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -31,5 +36,14 @@
     "not op_mini all"
   ],
   "homepage": "https://www.darrengreenfield.com/play-and-coffee",
-  "devDependencies": {}
+  "devDependencies": {
+    "enzyme": "^3.10.0",
+    "enzyme-adapter-react-16": "^1.14.0",
+    "enzyme-to-json": "^3.3.5"
+  },
+  "jest": {
+    "snapshotSerializers": [
+      "enzyme-to-json/serializer"
+    ]
+  }
 }

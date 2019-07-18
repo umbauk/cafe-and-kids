@@ -366,10 +366,10 @@ class App extends Component {
                   <CardText>
                     How long should it take to get there (minutes)?
                   </CardText>
-                  <Slider
+                  {/*<Slider
                     value={this.state.travelMinutes}
                     onSliderChange={this.handleTravelMinutesChange}
-                  />
+                  />*/}
                   <Input
                     type="text"
                     name="proximityMinutes"

@@ -1,0 +1,368 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`App matches initial snapshot 1`] = `
+<div
+  id="parent-window"
+>
+  <div
+    id="map-element"
+  />
+  <div
+    id="cardtable-container"
+  >
+    <Card
+      id="welcome-card"
+      tag="div"
+    >
+      <CardBody
+        tag="div"
+      >
+        <CardTitle
+          tag="div"
+        >
+          Welcome to 
+          <b>
+            Everyone's Happy
+          </b>
+           - the app for finding days out for the kids AND you!
+        </CardTitle>
+        <CardText
+          tag="p"
+        >
+          When would you like to do your family activity?
+        </CardText>
+        <Button
+          className="button"
+          color="secondary"
+          name="today"
+          onClick={[Function]}
+          tag="button"
+        >
+          Today
+        </Button>
+        <Button
+          className="button"
+          color="secondary"
+          name="tomorrow"
+          onClick={[Function]}
+          tag="button"
+        >
+          Tomorrow
+        </Button>
+      </CardBody>
+    </Card>
+  </div>
+</div>
+`;
+
+exports[`App matches snapshot after user clicks a date for activity 1`] = `
+<App>
+  <div
+    id="parent-window"
+  >
+    <div
+      id="map-element"
+    />
+    <div
+      id="cardtable-container"
+    >
+      <Card
+        id="welcome-card"
+        tag="div"
+      >
+        <div
+          className="card"
+          id="welcome-card"
+        >
+          <CardBody
+            tag="div"
+          >
+            <div
+              className="card-body"
+            >
+              <CardText
+                tag="p"
+              >
+                <p
+                  className="card-text"
+                >
+                  Where should it be close to?
+                </p>
+              </CardText>
+              <Input
+                id="locationTextBox"
+                name="location"
+                onChange={[Function]}
+                placeholder=""
+                type="text"
+              >
+                <input
+                  className="form-control"
+                  id="locationTextBox"
+                  name="location"
+                  onChange={[Function]}
+                  placeholder=""
+                  type="text"
+                />
+              </Input>
+              <Button
+                className="button"
+                color="secondary"
+                name="useCurrentLocation"
+                onClick={[Function]}
+                tag="button"
+              >
+                <button
+                  aria-label={null}
+                  className="button btn btn-secondary"
+                  name="useCurrentLocation"
+                  onClick={[Function]}
+                  type="button"
+                >
+                  Use current location
+                </button>
+              </Button>
+              <Button
+                className="button"
+                color="secondary"
+                name="location"
+                onClick={[Function]}
+                tag="button"
+              >
+                <button
+                  aria-label={null}
+                  className="button btn btn-secondary"
+                  name="location"
+                  onClick={[Function]}
+                  type="button"
+                >
+                  Submit
+                </button>
+              </Button>
+            </div>
+          </CardBody>
+        </div>
+      </Card>
+    </div>
+  </div>
+</App>
+`;
+
+exports[`App matches snapshot after user selects a location 1`] = `
+<App>
+  <div
+    id="parent-window"
+  >
+    <div
+      id="map-element"
+    />
+    <div
+      id="cardtable-container"
+    >
+      <Card
+        id="welcome-card"
+        tag="div"
+      >
+        <div
+          className="card"
+          id="welcome-card"
+        >
+          <CardBody
+            tag="div"
+          >
+            <div
+              className="card-body"
+            >
+              <CardText
+                tag="p"
+              >
+                <p
+                  className="card-text"
+                >
+                  How long should it take to get there (minutes)?
+                </p>
+              </CardText>
+              <Input
+                id="proximityMinutesTextBox"
+                name="proximityMinutes"
+                onChange={[Function]}
+                placeholder=""
+                type="text"
+                value=""
+              >
+                <input
+                  className="form-control"
+                  id="proximityMinutesTextBox"
+                  name="proximityMinutes"
+                  onChange={[Function]}
+                  placeholder=""
+                  type="text"
+                  value=""
+                />
+              </Input>
+              By what method of transport?
+              <Button
+                className="button"
+                color="secondary"
+                name="walk"
+                onClick={[Function]}
+                tag="button"
+              >
+                <button
+                  aria-label={null}
+                  className="button btn btn-secondary"
+                  name="walk"
+                  onClick={[Function]}
+                  type="button"
+                >
+                  Walk
+                </button>
+              </Button>
+              <Button
+                className="button"
+                color="secondary"
+                name="cycle"
+                onClick={[Function]}
+                tag="button"
+              >
+                <button
+                  aria-label={null}
+                  className="button btn btn-secondary"
+                  name="cycle"
+                  onClick={[Function]}
+                  type="button"
+                >
+                  Cycle
+                </button>
+              </Button>
+              <Button
+                className="button"
+                color="secondary"
+                name="car"
+                onClick={[Function]}
+                tag="button"
+              >
+                <button
+                  aria-label={null}
+                  className="button btn btn-secondary"
+                  name="car"
+                  onClick={[Function]}
+                  type="button"
+                >
+                  Car
+                </button>
+              </Button>
+              <Button
+                className="button"
+                color="secondary"
+                name="publicTransport"
+                onClick={[Function]}
+                tag="button"
+              >
+                <button
+                  aria-label={null}
+                  className="button btn btn-secondary"
+                  name="publicTransport"
+                  onClick={[Function]}
+                  type="button"
+                >
+                  Public transport
+                </button>
+              </Button>
+            </div>
+          </CardBody>
+        </div>
+      </Card>
+    </div>
+  </div>
+</App>
+`;
+
+exports[`App matches snapshot after user selects distance and travel method 1`] = `
+<App>
+  <div
+    id="parent-window"
+  >
+    <div
+      id="map-element"
+    />
+    <div
+      id="cardtable-container"
+    >
+      <div
+        id="cardTable-container"
+      >
+        Weather is going to be fine for outdoor play!
+        <CardTable
+          cardId="kids-activity-results-card"
+          cardText="Kids Activity Results"
+          placeResultsArray=""
+          tableId="kids-activity-results-table"
+        >
+          <Card
+            id="kids-activity-results-card"
+            tag="div"
+          >
+            <div
+              className="card"
+              id="kids-activity-results-card"
+            >
+              <CardBody
+                tag="div"
+              >
+                <div
+                  className="card-body"
+                >
+                  <CardText
+                    tag="p"
+                  >
+                    <p
+                      className="card-text"
+                    >
+                      Kids Activity Results
+                    </p>
+                  </CardText>
+                </div>
+              </CardBody>
+            </div>
+          </Card>
+        </CardTable>
+        <CardTable
+          cardId="cafe-results-card"
+          cardText="Cafe Results"
+          placeResultsArray=""
+          tableId="cafe-results-table"
+        >
+          <Card
+            id="cafe-results-card"
+            tag="div"
+          >
+            <div
+              className="card"
+              id="cafe-results-card"
+            >
+              <CardBody
+                tag="div"
+              >
+                <div
+                  className="card-body"
+                >
+                  <CardText
+                    tag="p"
+                  >
+                    <p
+                      className="card-text"
+                    >
+                      Cafe Results
+                    </p>
+                  </CardText>
+                </div>
+              </CardBody>
+            </div>
+          </Card>
+        </CardTable>
+      </div>
+    </div>
+  </div>
+</App>
+`;

@@ -1,7 +1,7 @@
 import { getPlaceUrl } from './getPlaceUrl.js';
 import {
   getEventDayWeatherForecast,
-  getUtTCOffsetForLocation,
+  getUTCOffsetForLocation,
   checkIfRainingOrTooCold,
 } from './getEventDayWeatherForecast';
 /* global google */
@@ -18,7 +18,7 @@ export async function getPlacesAndUpdateListings(
   let placeAndLabelsArray, markerArray;
   console.log('2) getPlacesAndUpdateListings starting...');
 
-  let utcOffset = await getUtTCOffsetForLocation(mapCenter);
+  let utcOffset = await getUTCOffsetForLocation(mapCenter);
   console.log(`utcOffset: ${utcOffset}`);
   let eventDayWeatherForecast = getEventDayWeatherForecast(
     eventDate,

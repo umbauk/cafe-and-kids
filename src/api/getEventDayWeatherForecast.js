@@ -1,4 +1,5 @@
-const KEY = 'AIzaSyB3uJwIJyCECeFfAAivmEqWW2pbHwQLoYo';
+import Config from '../config.js'; // API Keys
+const KEY = Config.passwords.GOOGLE_API_KEY;
 
 export function getEventDayWeatherForecast(eventDate, weatherJSON, utcOffset) {
   const today = new Date();
@@ -27,7 +28,7 @@ export function getEventDayWeatherForecast(eventDate, weatherJSON, utcOffset) {
   return eventDayForecast;
 }
 
-export function getUtTCOffsetForLocation(mapCenter) {
+export function getUTCOffsetForLocation(mapCenter) {
   const timestamp = Date.now() / 100; // seconds since 01 Jan 1970
   return fetch(
     `https://maps.googleapis.com/maps/api/timezone/json?location=${

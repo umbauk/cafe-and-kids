@@ -1,33 +1,6 @@
 import Config from '../config.js'; // API Keys
 const KEY = Config.passwords.GOOGLE_API_KEY;
 
-export function getEventDayWeatherForecast(eventDate, weatherJSON, utcOffset) {
-  const today = new Date();
-  let tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  let eventDayForecast;
-
-  // Forecasts are every 3 hours in UNIX UTC datetime. Get the forecasts that are for the day the user selected
-  if (eventDate === 'today') {
-    eventDayForecast = weatherJSON.list.filter(
-      forecast =>
-        new Date(forecast.dt * 1000).toDateString() === today.toDateString() &&
-        new Date(forecast.dt * 1000).getHours() + utcOffset >= 9 &&
-        new Date(forecast.dt * 1000).getHours() + utcOffset <= 18,
-    );
-  } else if (eventDate === 'tomorrow') {
-    eventDayForecast = weatherJSON.list.filter(
-      forecast =>
-        new Date(forecast.dt * 1000).toDateString() ===
-          tomorrow.toDateString() &&
-        new Date(forecast.dt * 1000).getHours() + utcOffset >= 9 &&
-        new Date(forecast.dt * 1000).getHours() + utcOffset <= 18,
-    );
-  }
-
-  return eventDayForecast;
-}
-
 export function getUTCOffsetForLocation(mapCenter) {
   const timestamp = Date.now() / 100; // seconds since 01 Jan 1970
   return fetch(
@@ -40,6 +13,39 @@ export function getUTCOffsetForLocation(mapCenter) {
       // rawOffset is UTC offset in seconds. Convert to hours before returning
       return result.rawOffset / 60 / 60;
     });
+}
+
+export function getEventDayWeatherForecast(
+  eventDate,
+  weatherJSON,
+  utcOffset,
+  todaysDate,
+) {
+  let tomorrow = new Date();
+  tomorrow.setDate(todaysDate.getDate() + 1);
+  let eventDayForecast;
+  console.log(weatherJSON);
+
+  // Forecasts are every 3 hours in UNIX UTC datetime. Get the forecasts that are for the day the user selected between 9am and 6pm
+  // new Date(forecast.dt) returns time in current time zone, which should be converted to time in location selected, if different from current timezone
+  if (eventDate === 'today') {
+    eventDayForecast = weatherJSON.list.filter(
+      forecast =>
+        new Date(forecast.dt * 1000).toDateString() ===
+          todaysDate.toDateString() &&
+        new Date(forecast.dt * 1000).getHours() >= 9 &&
+        new Date(forecast.dt * 1000).getHours() <= 18,
+    );
+  } else if (eventDate === 'tomorrow') {
+    eventDayForecast = weatherJSON.list.filter(
+      forecast =>
+        new Date(forecast.dt * 1000).toDateString() ===
+          tomorrow.toDateString() &&
+        new Date(forecast.dt * 1000).getHours() >= 9 &&
+        new Date(forecast.dt * 1000).getHours() <= 18,
+    );
+  }
+  return eventDayForecast;
 }
 
 export function checkIfRainingOrTooCold(eventDayForecast) {

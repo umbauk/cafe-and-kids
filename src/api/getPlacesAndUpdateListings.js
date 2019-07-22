@@ -20,10 +20,12 @@ export async function getPlacesAndUpdateListings(
 
   let utcOffset = await getUTCOffsetForLocation(mapCenter);
   console.log(`utcOffset: ${utcOffset}`);
+  const todaysDate = new Date();
   let eventDayWeatherForecast = getEventDayWeatherForecast(
     eventDate,
     weatherJSON,
     utcOffset,
+    todaysDate,
   );
 
   // if weather is too bad to be outdoors returns why, else returns false

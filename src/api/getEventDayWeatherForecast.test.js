@@ -36,21 +36,25 @@ describe('getUTCOffsetForLocation', () => {
 });
 
 describe('getEventDayWeatherForecast', () => {
-  const hours = 1000 * 60 * 60;
-  console.log(Date.now());
+  const hours = 60 * 60;
+  const utcDateDividedBy1000 = Math.round(1563861348000 / 1000); // Monday, 22 July 2019 22:55:48
   const mockWeatherJSON = {
     list: [
-      { dt: Date.now() },
-      { dt: Date.now() - 3 * hours },
-      { dt: Date.now() - 6 * hours },
-      { dt: Date.now() - 9 * hours },
-      { dt: Date.now() + 3 * hours },
-      { dt: Date.now() + 6 * hours },
-      { dt: Date.now() + 9 * hours },
+      { dt: utcDateDividedBy1000 },
+      { dt: utcDateDividedBy1000 - 3 * hours },
+      { dt: utcDateDividedBy1000 - 6 * hours },
+      { dt: utcDateDividedBy1000 - 9 * hours },
+      { dt: utcDateDividedBy1000 - 12 * hours },
+      { dt: utcDateDividedBy1000 - 15 * hours },
+      { dt: utcDateDividedBy1000 + 3 * hours },
+      { dt: utcDateDividedBy1000 + 6 * hours },
+      { dt: utcDateDividedBy1000 + 9 * hours },
+      { dt: utcDateDividedBy1000 + 12 * hours }, // Should pass
+      { dt: utcDateDividedBy1000 + 15 * hours }, // Should pass
     ],
   };
-  it('works', () => {
-    const todaysDate = new Date();
+  it('filters and returns the forecasts for the correct date and times', () => {
+    const todaysDate = new Date(1563861348000); // Monday, 22 July 2019 22:55:48
     const returnValue = getEventDayWeatherForecast(
       'tomorrow',
       mockWeatherJSON,
@@ -58,12 +62,68 @@ describe('getEventDayWeatherForecast', () => {
       todaysDate,
     );
 
-    expect(returnValue).toEqual();
+    expect(returnValue).toEqual([
+      { dt: utcDateDividedBy1000 + 12 * hours },
+      { dt: utcDateDividedBy1000 + 15 * hours },
+    ]);
   });
 });
 
 describe('checkIfRainingOrTooCold', () => {
-  it('works', () => {});
+  const tooRainyAndTooHot = [
+    {
+      rain: {
+        '3h': 10,
+      },
+      main: {
+        temp: 304,
+      },
+    },
+  ];
+  const tooCold = [
+    {
+      rain: {
+        '3h': 2,
+      },
+      main: {
+        temp: 100,
+      },
+    },
+  ];
+  const justRight = [
+    {
+      main: {
+        temp: 290,
+      },
+    },
+  ];
+  const tooHot = [
+    {
+      rain: {
+        '3h': 2,
+      },
+      main: {
+        temp: 304,
+      },
+    },
+  ];
+
+  it('returns correct result when too rainy and hot', () => {
+    const returnValue = checkIfRainingOrTooCold(tooRainyAndTooHot);
+    expect(returnValue).toBe('too rainy');
+  });
+  it('returns correct result when too cold', () => {
+    const returnValue = checkIfRainingOrTooCold(tooCold);
+    expect(returnValue).toBe('too cold');
+  });
+  it('returns correct result when just right', () => {
+    const returnValue = checkIfRainingOrTooCold(justRight);
+    expect(returnValue).toBe(false);
+  });
+  it('returns correct result when too hot', () => {
+    const returnValue = checkIfRainingOrTooCold(tooHot);
+    expect(returnValue).toBe('too hot');
+  });
 });
 
 global.fetch.mockClear();

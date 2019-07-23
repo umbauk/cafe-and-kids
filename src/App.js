@@ -22,6 +22,7 @@ import loadJS from './loadJS.js'; // loads Google Maps API script
 // Bugs:
 
 // To do:
+// Change timezone to location selected if location is outside user's curent timezone
 // avoid duplicate cafes
 // change text input for minutes to slider
 // have box open when clicking marker with details and photo?. Also highlight relevant text in card

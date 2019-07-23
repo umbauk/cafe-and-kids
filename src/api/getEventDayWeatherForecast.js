@@ -24,7 +24,6 @@ export function getEventDayWeatherForecast(
   let tomorrow = new Date();
   tomorrow.setDate(todaysDate.getDate() + 1);
   let eventDayForecast;
-  console.log(weatherJSON);
 
   // Forecasts are every 3 hours in UNIX UTC datetime. Get the forecasts that are for the day the user selected between 9am and 6pm
   // new Date(forecast.dt) returns time in current time zone, which should be converted to time in location selected, if different from current timezone

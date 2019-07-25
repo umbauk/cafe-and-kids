@@ -107,17 +107,21 @@ function filterOutLowRatedPlaces(flattenedPlacesArray) {
   return flattenedPlacesArray.filter(place => place.rating >= lowestRating);
 }
 
-function checkPlaceIsWithinRadius(
+export function checkPlaceIsWithinRadius(
   centerPoint,
   searchRadius,
   highRatedKidsPlacesArray,
 ) {
   // Converts radius in metres to distance in lat/lng
-  const searchRadiusInLatDegrees = parseInt(searchRadius) / 1000 / 110.574;
+  //const searchRadiusInLatDegrees = parseInt(searchRadius) / 1000 / 111.111;
+  const searchRadiusInLatDegrees =
+    ((parseInt(searchRadius) / 6378137) * 180) / Math.PI; // 0.00898315284
   const searchRadiusInLngDegrees =
-    parseInt(searchRadius) /
-    1000 /
-    (Math.cos((centerPoint.lat * Math.PI) / 180) * 111.32);
+    ((parseInt(searchRadius) /
+      (6378137 * Math.cos((centerPoint.lat * Math.PI) / 180))) *
+      180) /
+    Math.PI; // 0.00001131616
+  //(Math.cos((centerPoint.lat * Math.PI) / 180) * 111.111);
 
   return highRatedKidsPlacesArray.filter(place => {
     return (
@@ -136,7 +140,7 @@ function sortByRating(filteredPlacesArray) {
   return filteredPlacesArray.sort((a, b) => b.rating - a.rating);
 }
 
-function limitNumberOfPlaces(sortedKidsPlacesArray, limit) {
+export function limitNumberOfPlaces(sortedKidsPlacesArray, limit) {
   // Limits number of results per type to 'limit'
   return sortedKidsPlacesArray
     .filter(place => place.placeType === 'cafe')

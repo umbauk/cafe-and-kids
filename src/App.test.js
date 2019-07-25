@@ -5,6 +5,16 @@ import App from './App';
 import loadJS from './loadJS';
 
 jest.mock('./loadJS', () => jest.fn());
+const mapMock = {
+  getCenter: () => {
+    const lat = () => {};
+    const lng = () => {};
+    return {
+      lat: lat,
+      lng: lng,
+    };
+  },
+};
 
 //console.log(wrapper.find('button').first().text());
 
@@ -38,6 +48,8 @@ describe('App', () => {
     todayButton.simulate('click');
     wrapper.setState({ location: 1 }); // simulates location has been set
     wrapper.setState({ proximityMinutes: 20 });
+    wrapper.setState({ map: mapMock });
+
     const cycleButton = wrapper.find('button[children="Cycle"]');
     cycleButton.simulate('click');
 

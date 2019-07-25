@@ -8,7 +8,7 @@ import {
   Input,
   Table,
 } from 'reactstrap';
-import Slider from './Slider.js';
+//import Slider from './Slider.js';
 import './App.css';
 import { getPlacesAndUpdateListings } from './api/getPlacesAndUpdateListings';
 import { getCurrentLocation } from './api/getCurrentLocation';
@@ -144,49 +144,53 @@ class App extends Component {
   }
 
   async updateListings(searchRadius) {
-    let placeMarkersArray, placeLabelsAndUrlArray, activityShouldbeIndoors;
+    try {
+      let placeMarkersArray, placeLabelsAndUrlArray, activityShouldbeIndoors;
 
-    // clear markers
-    this.state.markers.forEach(marker => {
-      marker.setMap(null);
-    });
+      // clear markers
+      this.state.markers.forEach(marker => {
+        marker.setMap(null);
+      });
 
-    this.setState({
-      center: {
-        lat: this.state.map.getCenter().lat(),
-        lng: this.state.map.getCenter().lng(),
-      },
-      markers: [],
-    });
+      this.setState({
+        center: {
+          lat: this.state.map.getCenter().lat(),
+          lng: this.state.map.getCenter().lng(),
+        },
+        markers: [],
+      });
 
-    const weatherJSON = await getWeather(this.state.map.getCenter());
+      const weatherJSON = await getWeather(this.state.map.getCenter());
 
-    [
-      placeLabelsAndUrlArray,
-      placeMarkersArray,
-      activityShouldbeIndoors,
-    ] = await getPlacesAndUpdateListings(
-      this.state.map,
-      {
-        lat: this.state.map.getCenter().lat(),
-        lng: this.state.map.getCenter().lng(),
-      },
-      this.state.searchRadius || searchRadius,
-      this.state.eventDate,
-      weatherJSON,
-      this.state.travelMethod,
-    );
+      [
+        placeLabelsAndUrlArray,
+        placeMarkersArray,
+        activityShouldbeIndoors,
+      ] = await getPlacesAndUpdateListings(
+        this.state.map,
+        {
+          lat: this.state.map.getCenter().lat(),
+          lng: this.state.map.getCenter().lng(),
+        },
+        this.state.searchRadius || searchRadius,
+        this.state.eventDate,
+        weatherJSON,
+        this.state.travelMethod,
+      );
 
-    this.setState({
-      markers: [...placeMarkersArray],
-      cafeResults: placeLabelsAndUrlArray.filter(
-        element => element.placeType === 'cafe',
-      ),
-      kidsActivityResults: placeLabelsAndUrlArray.filter(
-        element => element.placeType === 'kids activity',
-      ),
-      activityShouldbeIndoors: activityShouldbeIndoors,
-    });
+      this.setState({
+        markers: [...placeMarkersArray],
+        cafeResults: placeLabelsAndUrlArray.filter(
+          element => element.placeType === 'cafe',
+        ),
+        kidsActivityResults: placeLabelsAndUrlArray.filter(
+          element => element.placeType === 'kids activity',
+        ),
+        activityShouldbeIndoors: activityShouldbeIndoors,
+      });
+    } catch (error) {
+      console.error(error);
+    }
   }
 
   dateBtnClicked = evt => {

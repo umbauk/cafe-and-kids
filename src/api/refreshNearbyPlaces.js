@@ -113,15 +113,13 @@ export function checkPlaceIsWithinRadius(
   highRatedKidsPlacesArray,
 ) {
   // Converts radius in metres to distance in lat/lng
-  //const searchRadiusInLatDegrees = parseInt(searchRadius) / 1000 / 111.111;
+  // source: https://gis.stackexchange.com/questions/2951/algorithm-for-offsetting-a-latitude-longitude-by-some-amount-of-meters
   const searchRadiusInLatDegrees =
-    ((parseInt(searchRadius) / 6378137) * 180) / Math.PI; // 0.00898315284
+    ((parseInt(searchRadius) / 6378137) * 180) / Math.PI; // 0.00898315284 @ 1000m
   const searchRadiusInLngDegrees =
-    ((parseInt(searchRadius) /
-      (6378137 * Math.cos((centerPoint.lat * Math.PI) / 180))) *
-      180) /
-    Math.PI; // 0.00001131616
-  //(Math.cos((centerPoint.lat * Math.PI) / 180) * 111.111);
+    (parseInt(searchRadius) /
+      (6378137 * Math.cos(Math.PI * (centerPoint.lat / 180)))) *
+    (180 / Math.PI); // 0.01131487697 @ 1000m
 
   return highRatedKidsPlacesArray.filter(place => {
     return (

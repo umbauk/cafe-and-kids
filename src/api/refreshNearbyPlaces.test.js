@@ -1,13 +1,30 @@
 import {
   limitNumberOfPlaces,
   checkPlaceIsWithinRadius,
+  filterOutLowRatedPlaces,
 } from './refreshNearbyPlaces.js';
+
+describe('filterOutLowRatedPlaces', () => {
+  it('filters out ratings below specified value', () => {
+    const mockPlacesArray = [
+      { rating: 2.4 },
+      { rating: 3.4 },
+      { rating: 3.4999 },
+      { rating: 3.5 },
+      { rating: 3.6 },
+      { rating: 5.0 },
+    ];
+    const returnArray = filterOutLowRatedPlaces(mockPlacesArray, 3.5);
+    expect(returnArray).toHaveLength(3);
+    expect(returnArray).toEqual(mockPlacesArray.slice(3));
+  });
+});
 
 describe('checkPlaceIsWithinRadius', () => {
   const highRatedKidsPlaceArrayMock = [
     {
       geometry: {
-        // within 1000m (800m)
+        // 800m from centre point
         location: {
           lat: () => 37.46098,
           lng: () => -122.138839,
@@ -16,7 +33,7 @@ describe('checkPlaceIsWithinRadius', () => {
     },
     {
       geometry: {
-        // outside 1000m (2.4km)
+        // 2.4km from centre point
         location: {
           lat: () => 37.436942,
           lng: () => -122.157213,
@@ -25,7 +42,7 @@ describe('checkPlaceIsWithinRadius', () => {
     },
     {
       geometry: {
-        // way outside 1000
+        // 11.4km from centre point
         location: {
           lat: () => 37.355814,
           lng: () => -122.179102,

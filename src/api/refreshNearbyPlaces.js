@@ -29,11 +29,16 @@ export async function refreshNearbyPlaces(
   );
 
   const service = new google.maps.places.PlacesService(map);
-  let kidsActivityList = getPlacesList(service, kidsActivityRequest);
-  const kidsActivityPlaceArray = await kidsActivityList;
+  const kidsActivityPlaceArray = await getPlacesList(
+    service,
+    kidsActivityRequest,
+  );
   const highRatedKidsPlacesArray = filterOutLowRatedPlaces(
     kidsActivityPlaceArray,
+    4.0,
   );
+  // Because Google Maps' MapSearchRequest() does not strictly use searchRadius when supplied
+  // we have to do our own test to filter out places not within our user-defined radius
   const withinRadiusKidsPlacesArray = checkPlaceIsWithinRadius(
     centerPoint,
     searchRadius,
@@ -65,7 +70,7 @@ async function getCafesArray(limitedKidsPlacesArray, service, travelMethod) {
     );
     return new Promise(async (resolve, reject) => {
       let cafeList = await getPlacesList(service, cafeRequest);
-      const highRatedCafesArray = filterOutLowRatedPlaces(cafeList);
+      const highRatedCafesArray = filterOutLowRatedPlaces(cafeList, 4.0);
       const withinRadiusCafesArray = checkPlaceIsWithinRadius(
         {
           lat: kidsPlace.geometry.location.lat(),
@@ -102,8 +107,7 @@ function getPlacesList(service, request) {
   });
 }
 
-function filterOutLowRatedPlaces(flattenedPlacesArray) {
-  const lowestRating = 4.0;
+export function filterOutLowRatedPlaces(flattenedPlacesArray, lowestRating) {
   return flattenedPlacesArray.filter(place => place.rating >= lowestRating);
 }
 

@@ -17,6 +17,22 @@ export async function refreshNearbyPlaces(
   travelMethod,
 ) {
   const centerPoint = mapCenter;
+  const service = new google.maps.places.PlacesService(map);
+
+  const kidsPlacesArray = await getKidsPlacesArray(activityShouldBeIndoors, centerPoint, searchRadius, service)
+
+  return getCafesArray(kidsPlacesArray, service, travelMethod)
+  .then(
+    limitedCafePlacesArray => {
+      const flattenedPlacesArray = kidsPlacesArray.concat(
+        ...limitedCafePlacesArray,
+      );
+      return Promise.resolve(flattenedPlacesArray);
+    },
+  );
+}
+
+async function getKidsPlacesArray(activityShouldBeIndoors, centerPoint, searchRadius, service) {
   let kidsActivityQuery = activityShouldBeIndoors
     ? 'indoor play center'
     : 'playground';
@@ -24,15 +40,14 @@ export async function refreshNearbyPlaces(
     kidsActivityQuery,
     centerPoint,
     searchRadius,
-    //type: ['park'],
     'kids activity',
   );
 
-  const service = new google.maps.places.PlacesService(map);
   const kidsActivityPlaceArray = await getPlacesList(
     service,
     kidsActivityRequest,
   );
+
   const highRatedKidsPlacesArray = filterOutLowRatedPlaces(
     kidsActivityPlaceArray,
     4.0,
@@ -45,21 +60,13 @@ export async function refreshNearbyPlaces(
     highRatedKidsPlacesArray,
   );
   const sortedKidsPlacesArray = sortByRating(withinRadiusKidsPlacesArray);
-  const limitedKidsPlacesArray = limitNumberOfPlaces(sortedKidsPlacesArray, 5);
+  return limitNumberOfPlaces(sortedKidsPlacesArray, 5);
 
-  return getCafesArray(limitedKidsPlacesArray, service, travelMethod).then(
-    limitedCafePlacesArray => {
-      const flattenedPlacesArray = limitedKidsPlacesArray.concat(
-        ...limitedCafePlacesArray,
-      );
-      return Promise.resolve(flattenedPlacesArray);
-    },
-  );
 }
 
 async function getCafesArray(limitedKidsPlacesArray, service, travelMethod) {
   const cafeQuery = 'kid friendly coffee shop'; // Google Maps text query for cafes
-  // shorten distance from activity to cafe if travelmethod is 'walk'
+  // shorten distance from activity to cafe if travel method is 'walk'
   const searchRadiusInMeters = travelMethod === 'walk' ? '500' : '1000';
   let promiseArray = limitedKidsPlacesArray.map(kidsPlace => {
     const cafeRequest = new MapSearchRequest(

@@ -1,4 +1,5 @@
 /* global google */
+import { getPlacesList } from './getPlacesList.js';
 
 class MapSearchRequest {
   constructor(query, location, radius, placeType) {
@@ -19,10 +20,14 @@ export async function refreshNearbyPlaces(
   const centerPoint = mapCenter;
   const service = new google.maps.places.PlacesService(map);
 
-  const kidsPlacesArray = await getKidsPlacesArray(activityShouldBeIndoors, centerPoint, searchRadius, service)
+  const kidsPlacesArray = await getKidsPlacesArray(
+    activityShouldBeIndoors,
+    centerPoint,
+    searchRadius,
+    service,
+  );
 
-  return getCafesArray(kidsPlacesArray, service, travelMethod)
-  .then(
+  return getCafesArray(kidsPlacesArray, service, travelMethod).then(
     limitedCafePlacesArray => {
       const flattenedPlacesArray = kidsPlacesArray.concat(
         ...limitedCafePlacesArray,
@@ -32,7 +37,12 @@ export async function refreshNearbyPlaces(
   );
 }
 
-async function getKidsPlacesArray(activityShouldBeIndoors, centerPoint, searchRadius, service) {
+async function getKidsPlacesArray(
+  activityShouldBeIndoors,
+  centerPoint,
+  searchRadius,
+  service,
+) {
   let kidsActivityQuery = activityShouldBeIndoors
     ? 'indoor play center'
     : 'playground';
@@ -61,7 +71,6 @@ async function getKidsPlacesArray(activityShouldBeIndoors, centerPoint, searchRa
   );
   const sortedKidsPlacesArray = sortByRating(withinRadiusKidsPlacesArray);
   return limitNumberOfPlaces(sortedKidsPlacesArray, 5);
-
 }
 
 async function getCafesArray(limitedKidsPlacesArray, service, travelMethod) {
@@ -93,24 +102,6 @@ async function getCafesArray(limitedKidsPlacesArray, service, travelMethod) {
   });
   return Promise.all(promiseArray).then(limitedCafePlacesArray => {
     return Promise.resolve(limitedCafePlacesArray);
-  });
-}
-
-function getPlacesList(service, request) {
-  return new Promise((resolve, reject) => {
-    service.textSearch(request, (placesArray, status) => {
-      if (status === google.maps.places.PlacesServiceStatus.OK) {
-        console.log('Places Service status: ok');
-        // Add the placeType ('cafe' or 'kids activity') to each entry in array
-        let returnArray = placesArray.map(element => {
-          return Object.assign(element, { placeType: request.placeType });
-        });
-        resolve(returnArray);
-      } else {
-        console.log(google.maps.places.PlacesServiceStatus);
-        resolve(google.maps.places.PlacesServiceStatus);
-      }
-    });
   });
 }
 

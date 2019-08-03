@@ -4,6 +4,18 @@ import {
   filterOutLowRatedPlaces,
 } from './refreshNearbyPlaces.js';
 
+describe('getKidsPlacesArray', () => {
+  const activityShouldBeIndoorsMock = false;
+  const centerPointMock = {
+    lat: 37.453638,
+    lng: -122.140341,
+  };
+  const searchRadiusMock = 1000;
+  const serviceMock = () => {};
+  jest.mock('getPlacesList', () => {});
+  it('', {});
+});
+
 describe('filterOutLowRatedPlaces', () => {
   it('filters out ratings below specified value', () => {
     const mockPlacesArray = [

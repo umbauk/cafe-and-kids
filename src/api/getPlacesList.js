@@ -1,6 +1,6 @@
 /* global google */
 
-export function getPlacesList(service, request) {
+export default function getPlacesList(service, request) {
   return new Promise((resolve, reject) => {
     service.textSearch(request, (placesArray, status) => {
       if (status === google.maps.places.PlacesServiceStatus.OK) {

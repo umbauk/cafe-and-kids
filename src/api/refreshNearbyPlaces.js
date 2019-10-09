@@ -1,5 +1,5 @@
 /* global google */
-import { getPlacesList } from './getPlacesList.js';
+import getPlacesList from './getPlacesList.js';
 
 class MapSearchRequest {
   constructor(query, location, radius, placeType) {
@@ -37,7 +37,7 @@ export async function refreshNearbyPlaces(
   );
 }
 
-async function getKidsPlacesArray(
+export async function getKidsPlacesArray(
   activityShouldBeIndoors,
   centerPoint,
   searchRadius,
@@ -73,7 +73,11 @@ async function getKidsPlacesArray(
   return limitNumberOfPlaces(sortedKidsPlacesArray, 5);
 }
 
-async function getCafesArray(limitedKidsPlacesArray, service, travelMethod) {
+export async function getCafesArray(
+  limitedKidsPlacesArray,
+  service,
+  travelMethod,
+) {
   const cafeQuery = 'kid friendly coffee shop'; // Google Maps text query for cafes
   // shorten distance from activity to cafe if travel method is 'walk'
   const searchRadiusInMeters = travelMethod === 'walk' ? '500' : '1000';

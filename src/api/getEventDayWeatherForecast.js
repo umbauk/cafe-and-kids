@@ -22,7 +22,12 @@ export function getEventDayWeatherForecast(
   todaysDate,
 ) {
   let tomorrow = new Date();
-  tomorrow.setDate(todaysDate.getDate() + 1);
+  tomorrow.setFullYear(
+    todaysDate.getFullYear(),
+    todaysDate.getMonth(),
+    todaysDate.getDate() + 1,
+  );
+  tomorrow.setHours(todaysDate.getHours(), todaysDate.getMinutes());
   let eventDayForecast;
 
   // Forecasts are every 3 hours in UNIX UTC datetime. Get the forecasts that are for the day the user selected between 9am and 6pm

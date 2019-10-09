@@ -1,3 +1,0 @@
-describe('getPlacesAndUpdateListings', () => {
-  it('works', () => {});
-});

@@ -2,7 +2,149 @@ import {
   limitNumberOfPlaces,
   checkPlaceIsWithinRadius,
   filterOutLowRatedPlaces,
+  getKidsPlacesArray,
+  getCafesArray,
 } from './refreshNearbyPlaces.js';
+
+import getPlacesList from './getPlacesList';
+
+jest.mock('./getPlacesList.js', (service, request) =>
+  jest.fn((service, request) => {
+    if (request.placeType === 'kids activity') {
+      return new Promise(resolve => {
+        const returnArray = [
+          {
+            placeType: 'kids activity',
+            rating: 4.1,
+            geometry: {
+              location: {
+                lat: () => 37.453638,
+                lng: () => -122.140341,
+              },
+            },
+          },
+          {
+            placeType: 'kids activity',
+            rating: 3.9,
+            geometry: {
+              location: {
+                lat: () => 37.453638,
+                lng: () => -122.140341,
+              },
+            },
+          },
+          {
+            placeType: 'kids activity',
+            rating: 4.5,
+            geometry: {
+              location: {
+                lat: () => 37.453638,
+                lng: () => -122.140341,
+              },
+            },
+          },
+          {
+            placeType: 'kids activity',
+            rating: 4.8,
+            geometry: {
+              location: {
+                lat: () => 38.453638, // outside radius
+                lng: () => -122.140341,
+              },
+            },
+          },
+          {
+            placeType: 'kids activity',
+            rating: 4.0,
+            geometry: {
+              location: {
+                lat: () => 37.453638,
+                lng: () => -122.140341,
+              },
+            },
+          },
+          {
+            placeType: 'kids activity',
+            rating: 4.0,
+            geometry: {
+              location: {
+                lat: () => 37.453638,
+                lng: () => -122.140341,
+              },
+            },
+          },
+          {
+            placeType: 'kids activity',
+            rating: 4.0,
+            geometry: {
+              location: {
+                lat: () => 37.453638,
+                lng: () => -122.140341,
+              },
+            },
+          },
+          {
+            placeType: 'kids activity',
+            rating: 4.7,
+            geometry: {
+              location: {
+                lat: () => 37.453638,
+                lng: () => -122.140341,
+              },
+            },
+          },
+        ];
+        resolve(returnArray);
+      });
+    } else if (request.placeType === 'cafe') {
+      return new Promise(resolve => {
+        const returnArray = [
+          {
+            placeType: 'cafe',
+            rating: 3.9, // below min rating
+            geometry: {
+              location: {
+                lat: () => 37.453638,
+                lng: () => -122.140341,
+              },
+            },
+          },
+          {
+            placeType: 'cafe',
+            rating: 4.5,
+            geometry: {
+              location: {
+                lat: () => 37.453638,
+                lng: () => -122.140341,
+              },
+            },
+          },
+          {
+            placeType: 'cafe',
+            rating: 4.8,
+            geometry: {
+              location: {
+                lat: () => 38.453638, // outside radius
+                lng: () => -122.140341,
+              },
+            },
+          },
+          {
+            placeType: 'cafe',
+            rating: 4.7,
+            geometry: {
+              location: {
+                lat: () => 38.453638,
+                lng: () => -123.140341,
+              },
+            },
+          },
+        ];
+        resolve(returnArray);
+      });
+    }
+  }),
+);
 
 describe('getKidsPlacesArray', () => {
   const activityShouldBeIndoorsMock = false;
@@ -12,8 +154,59 @@ describe('getKidsPlacesArray', () => {
   };
   const searchRadiusMock = 1000;
   const serviceMock = () => {};
-  jest.mock('getPlacesList', () => {});
-  it('', {});
+
+  it('limits results to 5, filters out ratings less than 4, sorts by rating and filters out locations outside radius', async () => {
+    const returnArray = await getKidsPlacesArray(
+      activityShouldBeIndoorsMock,
+      centerPointMock,
+      searchRadiusMock,
+      serviceMock,
+    );
+    expect(returnArray).toHaveLength(5);
+    expect(returnArray[0].rating).toEqual(4.7);
+    const ratingsFromReturnArray = returnArray.map(element => element.rating);
+    expect(Math.min(...ratingsFromReturnArray)).toEqual(4);
+    const latFromReturnArray = returnArray.map(element =>
+      element.geometry.location.lat(),
+    );
+    expect(Math.max(...latFromReturnArray)).toEqual(37.453638);
+  });
+});
+
+describe('getCafesArray', () => {
+  const travelMethodMock = 'walk';
+  const serviceMock = () => {};
+  const limitedKidsPlacesArrayMock = [
+    {
+      geometry: {
+        location: {
+          lat: () => 37.453638,
+          lng: () => -122.140341,
+        },
+      },
+    },
+    {
+      geometry: {
+        location: {
+          lat: () => 38.453638,
+          lng: () => -123.140341,
+        },
+      },
+    },
+  ];
+
+  it('limits results to equal 1 per kids activity place, filters out ratings less than 4, sorts by rating and filters out locations outside radius', async () => {
+    const returnArray = await getCafesArray(
+      limitedKidsPlacesArrayMock,
+      serviceMock,
+      travelMethodMock,
+    );
+    expect(returnArray).toHaveLength(limitedKidsPlacesArrayMock.length);
+    expect(returnArray[0][0].rating).toEqual(4.5);
+    expect(returnArray[1][0].rating).toEqual(4.7);
+    expect(returnArray[0][0].geometry.location.lat()).toEqual(37.453638);
+    expect(returnArray[1][0].geometry.location.lat()).toEqual(38.453638);
+  });
 });
 
 describe('filterOutLowRatedPlaces', () => {

@@ -1,13 +1,5 @@
 import React, { Component } from 'react';
-import {
-  Card,
-  CardText,
-  CardBody,
-  CardTitle,
-  Button,
-  Input,
-  Table,
-} from 'reactstrap';
+import { Card, CardText, CardBody, CardTitle, Button, Input, Table } from 'reactstrap';
 //import Slider from './Slider.js';
 import './App.css';
 import { getPlacesAndUpdateListings } from './api/getPlacesAndUpdateListings';
@@ -50,9 +42,7 @@ const CardTable = ({ cardId, cardText, tableId, placeResultsArray }) => (
   <Card id={cardId}>
     <CardBody>
       <CardText>{cardText}</CardText>
-      {placeResultsArray && (
-        <ResultsTable id={tableId} placeResultsArray={placeResultsArray} />
-      )}
+      {placeResultsArray && <ResultsTable id={tableId} placeResultsArray={placeResultsArray} />}
     </CardBody>
   </Card>
 );
@@ -69,9 +59,9 @@ const ResultsTable = ({ placeResultsArray }) => (
     <tbody>
       {placeResultsArray.map(place => (
         <tr key={place.label}>
-          <th scope="row">{place.label}</th>
+          <th scope='row'>{place.label}</th>
           <td>
-            <a target="_blank" rel="noopener noreferrer" href={place.url}>
+            <a target='_blank' rel='noopener noreferrer' href={place.url}>
               {place.name}
             </a>
           </td>
@@ -116,9 +106,7 @@ class App extends Component {
     window.initMap = this.initMap;
     // Asynchronously load the Google Maps script, passing in the callback reference
     const KEY = Config.passwords.GOOGLE_API_KEY;
-    loadJS(
-      `https://maps.googleapis.com/maps/api/js?key=${KEY}&libraries=places&callback=initMap`,
-    );
+    loadJS(`https://maps.googleapis.com/maps/api/js?key=${KEY}&libraries=places&callback=initMap`);
   }
 
   initMap() {
@@ -181,9 +169,7 @@ class App extends Component {
 
       this.setState({
         markers: [...placeMarkersArray],
-        cafeResults: placeLabelsAndUrlArray.filter(
-          element => element.placeType === 'cafe',
-        ),
+        cafeResults: placeLabelsAndUrlArray.filter(element => element.placeType === 'cafe'),
         kidsActivityResults: placeLabelsAndUrlArray.filter(
           element => element.placeType === 'kids activity',
         ),
@@ -286,8 +272,7 @@ class App extends Component {
     };
 
     const searchRadius = (
-      (speedOfTransportInMetresPerHr[travelMethod] *
-        this.state.proximityMinutes) /
+      (speedOfTransportInMetresPerHr[travelMethod] * this.state.proximityMinutes) /
       60
     ).toString();
 
@@ -300,35 +285,22 @@ class App extends Component {
 
   render() {
     return (
-      <div id="parent-window">
-        <div
-          id="map-element"
-          ref={mapElement => (this.mapElement = mapElement)}
-        />
+      <div id='parent-window'>
+        <div id='map-element' ref={mapElement => (this.mapElement = mapElement)} />
 
-        <div id="cardtable-container">
+        <div id='cardtable-container'>
           {!this.state.eventDate && (
-            <Card id="welcome-card">
+            <Card id='welcome-card'>
               <CardBody>
                 <CardTitle>
-                  Welcome to <b>Everyone's Happy</b> - the app for finding days
-                  out for the kids AND you!
+                  Welcome to <b>Everyone's Happy</b> - the app for finding days out for the kids AND
+                  you!
                 </CardTitle>
-                <CardText>
-                  When would you like to do your family activity?
-                </CardText>
-                <Button
-                  className="button"
-                  onClick={this.dateBtnClicked}
-                  name="today"
-                >
+                <CardText>When would you like to do your family activity?</CardText>
+                <Button className='button' onClick={this.dateBtnClicked} name='today'>
                   Today
                 </Button>
-                <Button
-                  className="button"
-                  onClick={this.dateBtnClicked}
-                  name="tomorrow"
-                >
+                <Button className='button' onClick={this.dateBtnClicked} name='tomorrow'>
                   Tomorrow
                 </Button>
               </CardBody>
@@ -336,104 +308,84 @@ class App extends Component {
           )}
 
           {this.state.eventDate && !this.state.location && (
-            <Card id="welcome-card">
+            <Card id='welcome-card'>
               <CardBody>
                 <CardText>Where should it be close to?</CardText>
                 <Input
-                  type="text"
-                  name="location"
-                  id="locationTextBox"
-                  placeholder=""
+                  type='text'
+                  spellCheck='false'
+                  name='location'
+                  id='locationTextBox'
+                  placeholder=''
                   onChange={this.locationTextBoxChanged}
                 />
                 <Button
-                  className="button"
+                  className='button'
                   onClick={this.locationBtnClicked}
-                  name="useCurrentLocation"
+                  name='useCurrentLocation'
                 >
                   Use current location
                 </Button>
-                <Button
-                  className="button"
-                  onClick={this.locationBtnClicked}
-                  name="location"
-                >
+                <Button className='button' onClick={this.locationBtnClicked} name='location'>
                   Submit
                 </Button>
               </CardBody>
             </Card>
           )}
 
-          {this.state.eventDate &&
-            this.state.location &&
-            !this.state.travelMethod && (
-              <Card id="welcome-card">
-                <CardBody>
-                  <CardText>
-                    How long should it take to get there (minutes)?
-                  </CardText>
-                  {/*<Slider
+          {this.state.eventDate && this.state.location && !this.state.travelMethod && (
+            <Card id='welcome-card'>
+              <CardBody>
+                <CardText>How long should it take to get there (minutes)?</CardText>
+                {/*<Slider
                     value={this.state.travelMinutes}
                     onSliderChange={this.handleTravelMinutesChange}
                   />*/}
-                  <Input
-                    type="text"
-                    name="proximityMinutes"
-                    id="proximityMinutesTextBox"
-                    placeholder=""
-                    value={this.state.proximityMinutes}
-                    onChange={this.proximityMinutesTextBoxChanged}
-                  />
-                  By what method of transport?
-                  <Button
-                    className="button"
-                    onClick={this.proximityBtnClicked}
-                    name="walk"
-                  >
-                    Walk
-                  </Button>
-                  <Button
-                    className="button"
-                    onClick={this.proximityBtnClicked}
-                    name="cycle"
-                  >
-                    Cycle
-                  </Button>
-                  <Button
-                    className="button"
-                    onClick={this.proximityBtnClicked}
-                    name="car"
-                  >
-                    Car
-                  </Button>
-                  <Button
-                    className="button"
-                    onClick={this.proximityBtnClicked}
-                    name="publicTransport"
-                  >
-                    Public transport
-                  </Button>
-                </CardBody>
-              </Card>
-            )}
+                <Input
+                  type='text'
+                  spellCheck='false'
+                  name='proximityMinutes'
+                  id='proximityMinutesTextBox'
+                  placeholder=''
+                  value={this.state.proximityMinutes}
+                  onChange={this.proximityMinutesTextBoxChanged}
+                />
+                By what method of transport?
+                <Button className='button' onClick={this.proximityBtnClicked} name='walk'>
+                  Walk
+                </Button>
+                <Button className='button' onClick={this.proximityBtnClicked} name='cycle'>
+                  Cycle
+                </Button>
+                <Button className='button' onClick={this.proximityBtnClicked} name='car'>
+                  Car
+                </Button>
+                <Button
+                  className='button'
+                  onClick={this.proximityBtnClicked}
+                  name='publicTransport'
+                >
+                  Public transport
+                </Button>
+              </CardBody>
+            </Card>
+          )}
 
           {this.state.travelMethod && (
-            <div id="cardTable-container">
+            <div id='cardTable-container'>
               {this.state.activityShouldbeIndoors
-                ? `Weather is going to be ${
-                    this.state.activityShouldbeIndoors
-                  } to be outdoors. Returning Indoor options.`
+                ? `Weather is going to be ${this.state.activityShouldbeIndoors} to be outdoors. Returning Indoor options.`
                 : 'Weather is going to be fine for outdoor play!'}
               <CardTable
-                cardId="kids-activity-results-card"
-                cardText="Kids Activity Results"
-                tableId="kids-activity-results-table"
+                cardId='kids-activity-results-card'
+                cardText='Kids Activity Results'
+                tableId='kids-activity-results-table'
                 placeResultsArray={this.state.kidsActivityResults}
               />
               <CardTable
-                cardId="cafe-results-card"
-                cardText="Cafe Results"
-                tableId="cafe-results-table"
+                cardId='cafe-results-card'
+                cardText='Cafe Results'
+                tableId='cafe-results-table'
                 placeResultsArray={this.state.cafeResults}
               />
             </div>

@@ -1,0 +1,34 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: cafe-and-kids-deployment
+spec:
+  selector:
+    matchLabels:
+      app: cafe-and-kids
+  template:
+    metadata:
+      labels:
+        app: cafe-and-kids
+    spec:
+      containers:
+        - name: cafe-and-kids-container
+          image: gcr.io/everyones-happy/cafe-and-kids
+          ports:
+            - containerPort: 3000
+              protocol: TCP
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cafe-and-kids-service
+  labels:
+    app: cafe-and-kids
+spec:
+  selector:
+    app: cafe-and-kids
+  ports:
+    - port: 8080
+      targetPort: 3000
+  type: NodePort

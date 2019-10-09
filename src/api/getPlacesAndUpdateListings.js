@@ -17,10 +17,10 @@ export async function getPlacesAndUpdateListings(
 ) {
   let placeAndLabelsArray, markerArray;
   console.log('2) getPlacesAndUpdateListings starting...');
+  const todaysDate = new Date();
 
   let utcOffset = await getUTCOffsetForLocation(mapCenter);
-  console.log(`utcOffset: ${utcOffset}`);
-  const todaysDate = new Date();
+
   let eventDayWeatherForecast = getEventDayWeatherForecast(
     eventDate,
     weatherJSON,
@@ -28,10 +28,7 @@ export async function getPlacesAndUpdateListings(
     todaysDate,
   );
 
-  // if weather is too bad to be outdoors returns why, else returns false
-  const activityShouldBeIndoors = checkIfRainingOrTooCold(
-    eventDayWeatherForecast,
-  );
+  const activityShouldBeIndoors = checkIfRainingOrTooCold(eventDayWeatherForecast);
 
   const filteredPlacesArray = await refreshNearbyPlaces(
     map,
@@ -40,12 +37,10 @@ export async function getPlacesAndUpdateListings(
     activityShouldBeIndoors,
     travelMethod,
   );
-  [placeAndLabelsArray, markerArray] = addMarkersToMap(
-    filteredPlacesArray,
-    map,
-  );
-  console.log('3) placeLabelsArray: ...');
+
+  [placeAndLabelsArray, markerArray] = addMarkersToMap(filteredPlacesArray, map);
   let placeLabelsAndUrlArray = await getPlaceUrl(placeAndLabelsArray);
+  // if weather is too bad to be outdoors returns why, else returns false
 
   console.log('5) refreshPlacesAndUpdateListings finished');
   return [placeLabelsAndUrlArray, markerArray, activityShouldBeIndoors];

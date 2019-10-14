@@ -94,6 +94,7 @@ exports[`App matches snapshot after user clicks a date for activity 1`] = `
                 name="location"
                 onChange={[Function]}
                 placeholder=""
+                spellCheck="false"
                 type="text"
               >
                 <input
@@ -102,6 +103,7 @@ exports[`App matches snapshot after user clicks a date for activity 1`] = `
                   name="location"
                   onChange={[Function]}
                   placeholder=""
+                  spellCheck="false"
                   type="text"
                 />
               </Input>
@@ -187,6 +189,7 @@ exports[`App matches snapshot after user selects a location 1`] = `
                 name="proximityMinutes"
                 onChange={[Function]}
                 placeholder=""
+                spellCheck="false"
                 type="text"
                 value=""
               >
@@ -196,6 +199,7 @@ exports[`App matches snapshot after user selects a location 1`] = `
                   name="proximityMinutes"
                   onChange={[Function]}
                   placeholder=""
+                  spellCheck="false"
                   type="text"
                   value=""
                 />

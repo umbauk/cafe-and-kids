@@ -16,3 +16,14 @@ steps:
     args:
       - 'push'
       - 'gcr.io/$PROJECT_ID/cafe-and-kids:$SHORT_SHA'
+
+  # This step updates the image being used in GKE deployment
+  - name: 'gcr.io/cloud-builders/kubectl'
+    id: Update GKE deployment
+    args:
+      - 'set'
+      - 'image'
+      - 'deployment'
+      - 'cafe-and-kids-deployment'
+      - 'cafe-and-kids-container=gcr.io/everyones-happy/cafe-and-kids:$SHORT_SHA'
+      - '--record'

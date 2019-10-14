@@ -8,7 +8,6 @@ export function getCurrentLocation() {
             lat: position.coords.latitude,
             lng: position.coords.longitude,
           };
-          console.log('1) getCurrentLocation() complete');
           resolve(currentCoordinates);
         }),
       );

@@ -13,30 +13,33 @@ import loadJS from './loadJS.js'; // loads Google Maps API script
 
 // Bugs:
 
-// To do:
-// Change timezone to location selected if location is outside user's curent timezone
-// fix zoom or map centre so results cards do not block map markers
-// avoid duplicate cafes
-// change text input for minutes to slider
-// have box open when clicking marker with details and photo?. Also highlight relevant text in card
-// Misc: incorporate number of reviews into order, say if no results so know it's working, format tables so columns are aligned
-// format places: location, snippet, (photo?)
-// add search text box to search for place to act as new center
-// return highly-rated, kid friendly cafes and show markers on map
-// return highly-rated playgrounds / playcentres / parks for kids and show markers on map
-// Add user-journey:
-//  - enter ages of children
-//  - enter date/time (check weather)
-//  - how close should it be (based on driving time at the date/time specified, walking time) OR where should it be
-//  - suggest indoor/outdoor but give option to change
-//  - list of highest rated (create method for this), open, relevant activities shown, pref with snippet/photo to explain what it is
-//  - include numbered markers on map
-//  - include coffee, lunch and dinner recommendations as appropriate
-//  - STRETCH: ability to decline individual recommendations, which then get replaced by another
-//  - ability to click on acitivty to be taken to website or detailed Google Maps listing for it
-// Redesign for mobile
-// Host on server
-// Produce Back-end to save user searches
+/* To do:
+[ ] Redesign for mobile
+[ ] Add estaimted time to play ground/ cafe to table
+[ ] Find way of linking relevant playground and cafe in table (e.g. next to each other)
+[ ] Change timezone to location selected if location is outside user's curent timezone
+[ ] fix zoom or map centre so results cards do not block map markers
+[ ] avoid duplicate cafes
+[ ] change text input for minutes to slider
+[ ] have box open when clicking marker with details and photo?. Also highlight relevant text in card
+[ ] Misc: incorporate number of reviews into order, say if no results so know it's working, format tables so columns are aligned
+[ ] format places: location, snippet, (photo?)
+[ ] add search text box to search for place to act as new center
+[ ] return highly-rated, kid friendly cafes and show markers on map
+[ ] return highly-rated playgrounds / playcentres / parks for kids and show markers on map
+[ ] Add user-journey:
+[ ]  - enter ages of children
+[ ]  - enter date/time (check weather)
+[ ]  - how close should it be (based on driving time at the date/time specified, walking time) OR where should it be
+[ ]  - suggest indoor/outdoor but give option to change
+[ ]  - list of highest rated (create method for this), open, relevant activities shown, pref with snippet/photo to explain what it is
+[ ]  - include numbered markers on map
+[ ]  - include coffee, lunch and dinner recommendations as appropriate
+[ ]  - STRETCH: ability to decline individual recommendations, which then get replaced by another
+[ ]  - ability to click on acitivty to be taken to website or detailed Google Maps listing for it
+[ ] Host on server
+[ ] Produce Back-end to save user searches
+*/
 
 const CardTable = ({ cardId, cardText, tableId, placeResultsArray }) => (
   <Card id={cardId}>

@@ -1,5 +1,9 @@
-import Config from '../config.js';
-const KEY = Config.passwords.OPEN_WEATHER_KEY;
+if (window.location.hostname === 'localhost') {
+  import Config from '../config.js';
+  const KEY = Config.passwords.OPEN_WEATHER_KEY;
+} else {
+  const KEY = process.env.GOOGLE_API_KEY;
+}
 
 export function getWeather(coords) {
   return fetch(

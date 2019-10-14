@@ -3,6 +3,7 @@ kind: Deployment
 metadata:
   name: cafe-and-kids-deployment
 spec:
+  replicas: 2
   selector:
     matchLabels:
       app: cafe-and-kids
@@ -17,6 +18,17 @@ spec:
           ports:
             - containerPort: 3000
               protocol: TCP
+          env:
+            - name: GOOGLE_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: google-maps-api-key
+                  key: GOOGLE_API_KEY
+            - name: OPEN_WEATHER_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: open-weather-api-key
+                  key: OPEN_WEATHER_KEY
 
 ---
 apiVersion: v1

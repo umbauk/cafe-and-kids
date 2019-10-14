@@ -6,8 +6,10 @@ import { getPlacesAndUpdateListings } from './api/getPlacesAndUpdateListings';
 import { getCurrentLocation } from './api/getCurrentLocation';
 import { getWeather } from './api/getWeather';
 import { lookupPlaceName } from './api/lookupPlaceName';
-import Config from './config.js'; // API Keys
 import loadJS from './loadJS.js'; // loads Google Maps API script
+if (window.location.hostname === 'localhost') {
+  import Config from './config.js'; // API Keys
+}
 
 /* global google */
 
@@ -108,7 +110,10 @@ class App extends Component {
     // so Google Maps can invoke it
     window.initMap = this.initMap;
     // Asynchronously load the Google Maps script, passing in the callback reference
-    const KEY = Config.passwords.GOOGLE_API_KEY;
+    const KEY =
+      window.location.hostname === 'localhost'
+        ? Config.passwords.GOOGLE_API_KEY
+        : process.env.GOOGLE_API_KEY;
     loadJS(`https://maps.googleapis.com/maps/api/js?key=${KEY}&libraries=places&callback=initMap`);
   }
 

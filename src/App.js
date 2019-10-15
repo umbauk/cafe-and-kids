@@ -113,6 +113,7 @@ class App extends Component {
       window.location.hostname === 'localhost'
         ? process.env.REACT_APP_GOOGLE_API_KEY
         : process.env.GOOGLE_API_KEY;
+    console.log(KEY);
     loadJS(`https://maps.googleapis.com/maps/api/js?key=${KEY}&libraries=places&callback=initMap`);
   }
 

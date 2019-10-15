@@ -3,8 +3,9 @@ import {
   getUTCOffsetForLocation,
   checkIfRainingOrTooCold,
 } from './getEventDayWeatherForecast.js';
-import Config from '../config.js';
-const KEY = Config.passwords.GOOGLE_API_KEY;
+import dotenv from 'dotenv';
+dotenv.config();
+const KEY = process.env.REACT_APP_GOOGLE_API_KEY;
 
 const mockSuccessResponse = 0;
 const mockJsonPromise = Promise.resolve(mockSuccessResponse);
@@ -21,15 +22,11 @@ describe('getUTCOffsetForLocation', () => {
     const returnValue = getUTCOffsetForLocation(coords);
 
     const fetchUrlRegex = new RegExp(
-      `https:\/\/maps\.googleapis\.com\/maps\/api\/timezone\/json\\?location=${
-        coords.lat
-      },${coords.lng}&timestamp=.+`,
+      `https:\/\/maps\.googleapis\.com\/maps\/api\/timezone\/json\\?location=${coords.lat},${coords.lng}&timestamp=.+`,
     );
 
     expect(global.fetch).toHaveBeenCalledTimes(1);
-    expect(global.fetch).toHaveBeenCalledWith(
-      expect.stringMatching(fetchUrlRegex),
-    );
+    expect(global.fetch).toHaveBeenCalledWith(expect.stringMatching(fetchUrlRegex));
     expect(returnValue).toEqual(mockJsonPromise);
     done();
   });
@@ -55,12 +52,7 @@ describe('getEventDayWeatherForecast', () => {
   };
   it('filters and returns the forecasts for the correct date and times', () => {
     const todaysDate = new Date(1563861348000); // Monday, 22 July 2019 22:55:48
-    const returnValue = getEventDayWeatherForecast(
-      'tomorrow',
-      mockWeatherJSON,
-      -8,
-      todaysDate,
-    );
+    const returnValue = getEventDayWeatherForecast('tomorrow', mockWeatherJSON, -8, todaysDate);
 
     expect(returnValue).toEqual([
       { dt: utcDateDividedBy1000 + 12 * hours },

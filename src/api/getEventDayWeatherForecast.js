@@ -1,12 +1,12 @@
-import Config from '../config.js'; // API Keys
-const KEY = Config.passwords.GOOGLE_API_KEY;
+const KEY =
+  window.location.hostname === 'localhost'
+    ? process.env.REACT_APP_GOOGLE_API_KEY
+    : process.env.GOOGLE_API_KEY;
 
 export function getUTCOffsetForLocation(mapCenter) {
   const timestamp = Date.now() / 100; // seconds since 01 Jan 1970
   return fetch(
-    `https://maps.googleapis.com/maps/api/timezone/json?location=${
-      mapCenter.lat
-    },${mapCenter.lng}&timestamp=${timestamp}&key=${KEY}`,
+    `https://maps.googleapis.com/maps/api/timezone/json?location=${mapCenter.lat},${mapCenter.lng}&timestamp=${timestamp}&key=${KEY}`,
   )
     .then(res => res.json())
     .then(result => {
@@ -15,18 +15,9 @@ export function getUTCOffsetForLocation(mapCenter) {
     });
 }
 
-export function getEventDayWeatherForecast(
-  eventDate,
-  weatherJSON,
-  utcOffset,
-  todaysDate,
-) {
+export function getEventDayWeatherForecast(eventDate, weatherJSON, utcOffset, todaysDate) {
   let tomorrow = new Date();
-  tomorrow.setFullYear(
-    todaysDate.getFullYear(),
-    todaysDate.getMonth(),
-    todaysDate.getDate() + 1,
-  );
+  tomorrow.setFullYear(todaysDate.getFullYear(), todaysDate.getMonth(), todaysDate.getDate() + 1);
   tomorrow.setHours(todaysDate.getHours(), todaysDate.getMinutes());
   let eventDayForecast;
 
@@ -35,16 +26,14 @@ export function getEventDayWeatherForecast(
   if (eventDate === 'today') {
     eventDayForecast = weatherJSON.list.filter(
       forecast =>
-        new Date(forecast.dt * 1000).toDateString() ===
-          todaysDate.toDateString() &&
+        new Date(forecast.dt * 1000).toDateString() === todaysDate.toDateString() &&
         new Date(forecast.dt * 1000).getHours() >= 9 &&
         new Date(forecast.dt * 1000).getHours() <= 18,
     );
   } else if (eventDate === 'tomorrow') {
     eventDayForecast = weatherJSON.list.filter(
       forecast =>
-        new Date(forecast.dt * 1000).toDateString() ===
-          tomorrow.toDateString() &&
+        new Date(forecast.dt * 1000).toDateString() === tomorrow.toDateString() &&
         new Date(forecast.dt * 1000).getHours() >= 9 &&
         new Date(forecast.dt * 1000).getHours() <= 18,
     );
@@ -60,9 +49,7 @@ export function checkIfRainingOrTooCold(eventDayForecast) {
   for (let i = 0; i < eventDayForecast.length; i++) {
     // forecasts don't have rain elements if there is 0 rain forecast
     if (eventDayForecast[i].rain) {
-      if (
-        eventDayForecast[i].rain['3h'] > maxRainInThreeHoursForOutdoorActivity
-      ) {
+      if (eventDayForecast[i].rain['3h'] > maxRainInThreeHoursForOutdoorActivity) {
         return 'too rainy';
       }
     }

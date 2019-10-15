@@ -7,8 +7,6 @@ import { getCurrentLocation } from './api/getCurrentLocation';
 import { getWeather } from './api/getWeather';
 import { lookupPlaceName } from './api/lookupPlaceName';
 import loadJS from './loadJS.js'; // loads Google Maps API script
-import dotenv from 'dotenv';
-dotenv.config();
 
 /* global google */
 
@@ -16,7 +14,7 @@ dotenv.config();
 
 /* To do:
 [ ] Redesign for mobile
-[ ] Add estaimted time to play ground/ cafe to table
+[ ] Add estimated time to play ground/ cafe to table
 [ ] Find way of linking relevant playground and cafe in table (e.g. next to each other)
 [ ] Change timezone to location selected if location is outside user's curent timezone
 [ ] fix zoom or map centre so results cards do not block map markers
@@ -112,8 +110,7 @@ class App extends Component {
     const KEY =
       window.location.hostname === 'localhost'
         ? process.env.REACT_APP_GOOGLE_API_KEY
-        : process.env.GOOGLE_API_KEY;
-    console.log(KEY);
+        : 'AIzaSyB71MXo5ATeGeIlxvujjS9HQlTLz7pFV8Q'; // host restricted
     loadJS(`https://maps.googleapis.com/maps/api/js?key=${KEY}&libraries=places&callback=initMap`);
   }
 

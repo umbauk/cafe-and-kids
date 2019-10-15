@@ -4,7 +4,7 @@ dotenv.config();
 const KEY =
   window.location.hostname === 'localhost'
     ? process.env.REACT_APP_GOOGLE_API_KEY
-    : process.env.GOOGLE_API_KEY;
+    : 'c0015c7da948e2feeea7c878cc929a9c'; // host restricted
 
 export function getUTCOffsetForLocation(mapCenter) {
   const timestamp = Date.now() / 100; // seconds since 01 Jan 1970

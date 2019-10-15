@@ -16,7 +16,6 @@ export async function getPlacesAndUpdateListings(
   travelMethod, // string of 'walk', 'cycle', 'car', 'public transport'
 ) {
   let placeAndLabelsArray, markerArray;
-  console.log('2) getPlacesAndUpdateListings starting...');
   const todaysDate = new Date();
 
   let utcOffset = await getUTCOffsetForLocation(mapCenter);
@@ -42,6 +41,5 @@ export async function getPlacesAndUpdateListings(
   let placeLabelsAndUrlArray = await getPlaceUrl(placeAndLabelsArray);
   // if weather is too bad to be outdoors returns why, else returns false
 
-  console.log('5) refreshPlacesAndUpdateListings finished');
   return [placeLabelsAndUrlArray, markerArray, activityShouldBeIndoors];
 }

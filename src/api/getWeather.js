@@ -1,3 +1,6 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 export function getWeather(coords) {
   const KEY =
     window.location.hostname === 'localhost'

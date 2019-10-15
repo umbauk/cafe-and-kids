@@ -7,6 +7,8 @@ import { getCurrentLocation } from './api/getCurrentLocation';
 import { getWeather } from './api/getWeather';
 import { lookupPlaceName } from './api/lookupPlaceName';
 import loadJS from './loadJS.js'; // loads Google Maps API script
+import dotenv from 'dotenv';
+dotenv.config();
 
 /* global google */
 

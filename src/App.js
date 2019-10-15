@@ -7,9 +7,6 @@ import { getCurrentLocation } from './api/getCurrentLocation';
 import { getWeather } from './api/getWeather';
 import { lookupPlaceName } from './api/lookupPlaceName';
 import loadJS from './loadJS.js'; // loads Google Maps API script
-if (window.location.hostname === 'localhost') {
-  import Config from './config.js'; // API Keys
-}
 
 /* global google */
 
@@ -112,8 +109,9 @@ class App extends Component {
     // Asynchronously load the Google Maps script, passing in the callback reference
     const KEY =
       window.location.hostname === 'localhost'
-        ? Config.passwords.GOOGLE_API_KEY
+        ? process.env.REACT_APP_GOOGLE_API_KEY
         : process.env.GOOGLE_API_KEY;
+    console.log(KEY);
     loadJS(`https://maps.googleapis.com/maps/api/js?key=${KEY}&libraries=places&callback=initMap`);
   }
 

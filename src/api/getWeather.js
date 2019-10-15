@@ -1,11 +1,8 @@
-if (window.location.hostname === 'localhost') {
-  import Config from '../config.js';
-  const KEY = Config.passwords.OPEN_WEATHER_KEY;
-} else {
-  const KEY = process.env.GOOGLE_API_KEY;
-}
-
 export function getWeather(coords) {
+  const KEY =
+    window.location.hostname === 'localhost'
+      ? process.env.REACT_APP_OPEN_WEATHER_KEY
+      : process.env.OPEN_WEATHER_KEY;
   return fetch(
     `https://api.openweathermap.org/data/2.5/forecast?lat=${coords.lat()}&lon=${coords.lng()}&APPID=${KEY}`,
   )

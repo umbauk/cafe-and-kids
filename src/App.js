@@ -11,8 +11,8 @@ import loadJS from './loadJS.js'; // loads Google Maps API script
 
 const CardTable = ({ cardId, cardText, tableId, placeResultsArray }) => (
   <Card id={cardId}>
-    <CardBody>
-      <CardText>{cardText}</CardText>
+    <CardBody className='results-table-body'>
+      <h2>{cardText}</h2>
       {placeResultsArray && <ResultsTable id={tableId} placeResultsArray={placeResultsArray} />}
     </CardBody>
   </Card>
@@ -24,7 +24,7 @@ const ResultsTable = ({ placeResultsArray }) => (
       <tr>
         <th>Label</th>
         <th>Place name</th>
-        <th>Rating / 5</th>
+        <th>Rating</th>
       </tr>
     </thead>
     <tbody>
@@ -357,7 +357,7 @@ class App extends Component {
                   <option>60</option>
                   <option>90</option>
                 </Input>
-                <p></p>
+                <br />
                 How will you be travelling?
                 <Button
                   className='button transport-btn'
@@ -396,7 +396,6 @@ class App extends Component {
           )}
 
           {this.state.travelMethod && (
-            // <div id='cardTable-container'>
             <Card id='welcome-card'>
               <CardBody>
                 <CardTitle>
@@ -406,6 +405,8 @@ class App extends Component {
                   {this.state.activityShouldbeIndoors
                     ? `Weather is going to be ${this.state.activityShouldbeIndoors} to be outdoors. Returning Indoor options.`
                     : 'Weather is going to be fine for outdoor play!'}
+                  <br />
+                  Drag the map to update search results
                 </CardText>
                 <CardTable
                   cardId='kids-activity-results-card'
@@ -421,7 +422,6 @@ class App extends Component {
                 />
               </CardBody>
             </Card>
-            //</div>
           )}
         </div>
       </div>

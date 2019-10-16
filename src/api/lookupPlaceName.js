@@ -13,10 +13,9 @@ export async function lookupPlaceName(map, placeToLookup, currentMapCenter) {
 
           resolve(centerCoordsOfPlace);
         } else {
-          // revert to default center
-          alert('Place not found');
+          // place not found, return 'UNKNOWN'
           console.log(status);
-          let centerCoordsOfPlace = currentMapCenter;
+          let centerCoordsOfPlace = 'UNKNOWN';
           resolve(centerCoordsOfPlace);
         }
       },

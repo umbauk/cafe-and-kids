@@ -2,8 +2,16 @@
   box-sizing: border-box;
 }
 
+html {
+  font-size: calc(1em + 1vw);
+}
+
 h2 {
-  font-size: 0.5em;
+  font-size: 0.5rem;
+}
+
+p.card-text {
+  margin-bottom: 0.35rem;
 }
 
 .App {
@@ -27,6 +35,7 @@ h2 {
   position: absolute;
   top: 20%;
   width: 100%;
+  font-size: 0.75;
 }
 
 #cardtable-container {
@@ -37,7 +46,11 @@ h2 {
 }
 
 .card-text {
-  font-size: 1.5em;
+  font-size: 0.75rem;
+}
+
+.card-body {
+  font-size: 0.75rem;
 }
 
 #cafe-results-card {
@@ -49,6 +62,48 @@ h2 {
   top: 70%;
 }
 
+.table th,
+.table td {
+  font-size: 0.5rem;
+  padding: 0.2rem;
+}
+
 .button {
   margin: 5px;
+}
+
+.btn.btn {
+  font-size: 0.75rem;
+}
+
+.transport-btn {
+  width: 7rem;
+}
+
+.date-btn {
+  width: 6rem;
+}
+
+.form-control.form-control {
+  font-size: 0.75rem;
+}
+
+#proximityMinutesInputBox {
+  width: 5rem;
+}
+
+#cafe-and-kids {
+  font-family: Pacifico;
+  font-size: 2rem;
+}
+
+#subtitle {
+  text-indent: 1em;
+  font-size: 0.75rem;
+  font-style: italic;
+}
+
+#locationTextBox {
+  margin: 5px;
+  margin-top: 0px;
 }

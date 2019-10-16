@@ -1,6 +1,5 @@
 import { getWeather } from './getWeather.js';
-import Config from '../config.js';
-const KEY = Config.passwords.OPEN_WEATHER_KEY;
+const KEY = process.env.REACT_APP_OPEN_WEATHER_KEY;
 
 describe('getWeather', () => {
   it('sends correctly formatted api request url to openweathermap.org', done => {

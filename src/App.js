@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import { Card, CardText, CardBody, CardTitle, Button, Input, Table } from 'reactstrap';
-//import Slider from './Slider.js';
 import './App.css';
 import { getPlacesAndUpdateListings } from './api/getPlacesAndUpdateListings';
 import { getCurrentLocation } from './api/getCurrentLocation';
@@ -9,36 +8,6 @@ import { lookupPlaceName } from './api/lookupPlaceName';
 import loadJS from './loadJS.js'; // loads Google Maps API script
 
 /* global google */
-
-// Bugs:
-
-/* To do:
-[ ] Redesign for mobile
-[ ] Add estimated time to play ground/ cafe to table
-[ ] Find way of linking relevant playground and cafe in table (e.g. next to each other)
-[ ] Change timezone to location selected if location is outside user's curent timezone
-[ ] fix zoom or map centre so results cards do not block map markers
-[ ] avoid duplicate cafes
-[ ] change text input for minutes to slider
-[ ] have box open when clicking marker with details and photo?. Also highlight relevant text in card
-[ ] Misc: incorporate number of reviews into order, say if no results so know it's working, format tables so columns are aligned
-[ ] format places: location, snippet, (photo?)
-[ ] add search text box to search for place to act as new center
-[ ] return highly-rated, kid friendly cafes and show markers on map
-[ ] return highly-rated playgrounds / playcentres / parks for kids and show markers on map
-[ ] Add user-journey:
-[ ]  - enter ages of children
-[ ]  - enter date/time (check weather)
-[ ]  - how close should it be (based on driving time at the date/time specified, walking time) OR where should it be
-[ ]  - suggest indoor/outdoor but give option to change
-[ ]  - list of highest rated (create method for this), open, relevant activities shown, pref with snippet/photo to explain what it is
-[ ]  - include numbered markers on map
-[ ]  - include coffee, lunch and dinner recommendations as appropriate
-[ ]  - STRETCH: ability to decline individual recommendations, which then get replaced by another
-[ ]  - ability to click on acitivty to be taken to website or detailed Google Maps listing for it
-[ ] Host on server
-[ ] Produce Back-end to save user searches
-*/
 
 const CardTable = ({ cardId, cardText, tableId, placeResultsArray }) => (
   <Card id={cardId}>
@@ -197,7 +166,7 @@ class App extends Component {
         autoCompleteAddedToTextBox: true,
       });
       const input = document.getElementById('locationTextBox');
-      this.autocomplete = new google.maps.places.Autocomplete(input);
+      this.autocomplete = new google.maps.places.Autocomplete(input, { types: ['geocode'] });
       this.autocomplete.addListener('place_changed', this.handlePlaceSelect);
     }
     this.setState({
@@ -218,17 +187,20 @@ class App extends Component {
     const map = this.state.map;
     const centerCoords = await this.getCenterCoords(evt, map);
 
-    this.setState({
-      location: 1,
-    });
-    map.panTo(centerCoords);
-    map.setCenter(centerCoords);
-    map.setZoom(13);
+    if (centerCoords === 'UNKNOWN') {
+      alert('Place not found. Please enter a new place');
+    } else {
+      this.setState({
+        location: 1,
+      });
+      map.panTo(centerCoords);
+      map.setCenter(centerCoords);
+      map.setZoom(13);
+    }
   };
 
   getCenterCoords = (evt, map) => {
     return new Promise(async (resolve, reject) => {
-      //let centerCoords;
       if (evt.target.name === 'useCurrentLocation') {
         resolve(await getCurrentLocation());
       } else if (!this.state.locationCoords) {
@@ -246,38 +218,42 @@ class App extends Component {
     });
   };
 
-  proximityMinutesTextBoxChanged = evt => {
+  proximityMinutesInputBoxChanged = evt => {
     this.setState({
       proximityMinutes: evt.target.value,
     });
   };
 
   proximityBtnClicked = evt => {
-    if (!this.state.proximityMinutes > 0) {
+    let proximityMinutes;
+    if (this.state.proximityMinutes === '') {
       // user has not entered a number in the input field
-      alert('Please enter a number');
+      proximityMinutes = 10;
+      this.setState({
+        proximityMinutes: 10,
+      });
     } else {
-      this.setState({
-        travelMethod: evt.target.name,
-      });
-      const searchRadius = this.distanceCalculation(evt.target.name);
-      this.setState({
-        searchRadius: searchRadius,
-      });
-      this.updateListings(searchRadius);
+      proximityMinutes = this.state.proximityMinutes;
     }
+    this.setState({
+      travelMethod: evt.target.name,
+    });
+    const searchRadius = this.distanceCalculation(evt.target.name, proximityMinutes);
+    this.setState({
+      searchRadius: searchRadius,
+    });
+    this.updateListings(searchRadius);
   };
 
-  distanceCalculation = travelMethod => {
-    const speedOfTransportInMetresPerHr = {
+  distanceCalculation = (travelMethod, proximityMinutes) => {
+    const SPEED_OF_TRANSPORT_IN_METRES_PER_HOUR = {
       walk: 5000,
       cycle: 10000,
       car: 40000,
       publicTransport: 20000,
     };
-
     const searchRadius = (
-      (speedOfTransportInMetresPerHr[travelMethod] * this.state.proximityMinutes) /
+      (SPEED_OF_TRANSPORT_IN_METRES_PER_HOUR[travelMethod] * proximityMinutes) /
       60
     ).toString();
 
@@ -298,14 +274,24 @@ class App extends Component {
             <Card id='welcome-card'>
               <CardBody>
                 <CardTitle>
-                  Welcome to <b>Everyone's Happy</b> - the app for finding days out for the kids AND
-                  you!
+                  <div id='cafe-and-kids'>Cafe and Kids</div>
+                  <div id='subtitle'>Find great playgrounds near great coffee!</div>
                 </CardTitle>
                 <CardText>When would you like to do your family activity?</CardText>
-                <Button className='button' onClick={this.dateBtnClicked} name='today'>
+                <Button
+                  className='button date-btn'
+                  color='primary'
+                  onClick={this.dateBtnClicked}
+                  name='today'
+                >
                   Today
                 </Button>
-                <Button className='button' onClick={this.dateBtnClicked} name='tomorrow'>
+                <Button
+                  className='button date-btn'
+                  color='primary'
+                  onClick={this.dateBtnClicked}
+                  name='tomorrow'
+                >
                   Tomorrow
                 </Button>
               </CardBody>
@@ -315,7 +301,10 @@ class App extends Component {
           {this.state.eventDate && !this.state.location && (
             <Card id='welcome-card'>
               <CardBody>
-                <CardText>Where should it be close to?</CardText>
+                <CardTitle>
+                  <div id='cafe-and-kids'>Cafe and Kids</div>
+                </CardTitle>
+                <CardText>Where should it be near?</CardText>
                 <Input
                   type='text'
                   spellCheck='false'
@@ -326,13 +315,19 @@ class App extends Component {
                 />
                 <Button
                   className='button'
+                  color='primary'
+                  onClick={this.locationBtnClicked}
+                  name='location'
+                >
+                  Submit
+                </Button>
+                <Button
+                  className='button'
+                  color='primary'
                   onClick={this.locationBtnClicked}
                   name='useCurrentLocation'
                 >
                   Use current location
-                </Button>
-                <Button className='button' onClick={this.locationBtnClicked} name='location'>
-                  Submit
                 </Button>
               </CardBody>
             </Card>
@@ -341,33 +336,57 @@ class App extends Component {
           {this.state.eventDate && this.state.location && !this.state.travelMethod && (
             <Card id='welcome-card'>
               <CardBody>
-                <CardText>How long should it take to get there (minutes)?</CardText>
-                {/*<Slider
-                    value={this.state.travelMinutes}
-                    onSliderChange={this.handleTravelMinutesChange}
-                  />*/}
+                <CardTitle>
+                  <div id='cafe-and-kids'>Cafe and Kids</div>
+                </CardTitle>
+                <CardText>
+                  How many <b>minutes</b> should it take to get there?
+                </CardText>
                 <Input
-                  type='text'
-                  spellCheck='false'
+                  type='select'
                   name='proximityMinutes'
-                  id='proximityMinutesTextBox'
-                  placeholder=''
+                  id='proximityMinutesInputBox'
                   value={this.state.proximityMinutes}
-                  onChange={this.proximityMinutesTextBoxChanged}
-                />
-                By what method of transport?
-                <Button className='button' onClick={this.proximityBtnClicked} name='walk'>
+                  onChange={this.proximityMinutesInputBoxChanged}
+                >
+                  <option>10</option>
+                  <option>15</option>
+                  <option>20</option>
+                  <option>30</option>
+                  <option>45</option>
+                  <option>60</option>
+                  <option>90</option>
+                </Input>
+                <p></p>
+                How will you be travelling?
+                <Button
+                  className='button transport-btn'
+                  color='primary'
+                  onClick={this.proximityBtnClicked}
+                  name='walk'
+                >
                   Walk
                 </Button>
-                <Button className='button' onClick={this.proximityBtnClicked} name='cycle'>
+                <Button
+                  className='button transport-btn'
+                  color='primary'
+                  onClick={this.proximityBtnClicked}
+                  name='cycle'
+                >
                   Cycle
                 </Button>
-                <Button className='button' onClick={this.proximityBtnClicked} name='car'>
+                <Button
+                  className='button transport-btn'
+                  color='primary'
+                  onClick={this.proximityBtnClicked}
+                  name='car'
+                >
                   Car
                 </Button>
                 <Button
-                  className='button'
+                  className='button transport-btn'
                   onClick={this.proximityBtnClicked}
+                  color='primary'
                   name='publicTransport'
                 >
                   Public transport
@@ -377,23 +396,32 @@ class App extends Component {
           )}
 
           {this.state.travelMethod && (
-            <div id='cardTable-container'>
-              {this.state.activityShouldbeIndoors
-                ? `Weather is going to be ${this.state.activityShouldbeIndoors} to be outdoors. Returning Indoor options.`
-                : 'Weather is going to be fine for outdoor play!'}
-              <CardTable
-                cardId='kids-activity-results-card'
-                cardText='Kids Activity Results'
-                tableId='kids-activity-results-table'
-                placeResultsArray={this.state.kidsActivityResults}
-              />
-              <CardTable
-                cardId='cafe-results-card'
-                cardText='Cafe Results'
-                tableId='cafe-results-table'
-                placeResultsArray={this.state.cafeResults}
-              />
-            </div>
+            // <div id='cardTable-container'>
+            <Card id='welcome-card'>
+              <CardBody>
+                <CardTitle>
+                  <div id='cafe-and-kids'>Cafe and Kids</div>
+                </CardTitle>
+                <CardText>
+                  {this.state.activityShouldbeIndoors
+                    ? `Weather is going to be ${this.state.activityShouldbeIndoors} to be outdoors. Returning Indoor options.`
+                    : 'Weather is going to be fine for outdoor play!'}
+                </CardText>
+                <CardTable
+                  cardId='kids-activity-results-card'
+                  cardText='Kids Activity Results'
+                  tableId='kids-activity-results-table'
+                  placeResultsArray={this.state.kidsActivityResults}
+                />
+                <CardTable
+                  cardId='cafe-results-card'
+                  cardText='Cafe Results'
+                  tableId='cafe-results-table'
+                  placeResultsArray={this.state.cafeResults}
+                />
+              </CardBody>
+            </Card>
+            //</div>
           )}
         </div>
       </div>

@@ -12,7 +12,7 @@ import loadJS from './loadJS.js'; // loads Google Maps API script
 const CardTable = ({ cardId, cardText, tableId, placeResultsArray }) => (
   <Card id={cardId}>
     <CardBody className='results-table-body'>
-      <h2>{cardText}</h2>
+      <CardText className='table-title'>{cardText}</CardText>
       {placeResultsArray && <ResultsTable id={tableId} placeResultsArray={placeResultsArray} />}
     </CardBody>
   </Card>
@@ -28,17 +28,37 @@ const ResultsTable = ({ placeResultsArray }) => (
       </tr>
     </thead>
     <tbody>
-      {placeResultsArray.map(place => (
-        <tr key={place.label}>
-          <th scope='row'>{place.label}</th>
+      {placeResultsArray.map(place => [
+        <tr key={place.kidsPlace.label}>
+          <th scope='row' className='green-bg'>
+            <center>{place.kidsPlace.label}</center>
+          </th>
           <td>
-            <a target='_blank' rel='noopener noreferrer' href={place.url}>
-              {place.name}
+            <a target='_blank' rel='noopener noreferrer' href={place.kidsPlace.url}>
+              {place.kidsPlace.name}
             </a>
           </td>
-          <td>{place.rating}</td>
-        </tr>
-      ))}
+          <td>
+            <center>{place.kidsPlace.rating}</center>
+          </td>
+        </tr>,
+        <tr key={place.cafe.label}>
+          <th scope='row' className='red-bg'>
+            <center>{place.cafe.label}</center>
+          </th>
+          <td>
+            <a target='_blank' rel='noopener noreferrer' href={place.cafe.url}>
+              {place.cafe.name}
+            </a>
+          </td>
+          <td>
+            <center>{place.cafe.rating}</center>
+          </td>
+        </tr>,
+        <tr className='blank-row' key={place.cafe.label + place.kidsPlace.label}>
+          <td colSpan='3'></td>
+        </tr>,
+      ])}
     </tbody>
   </Table>
 );
@@ -55,8 +75,7 @@ class App extends Component {
       map: {},
       markers: [],
       eventDate: null, // Date user wants to do activity
-      cafeResults: '', // HTML to be displayed in Table
-      kidsActivityResults: '', // HTML to be displayed in Table
+      placeResults: '',
       location: null,
       locationTextBoxValue: '',
       locationCoords: null,
@@ -143,10 +162,7 @@ class App extends Component {
 
       this.setState({
         markers: [...placeMarkersArray],
-        cafeResults: placeLabelsAndUrlArray.filter(element => element.placeType === 'cafe'),
-        kidsActivityResults: placeLabelsAndUrlArray.filter(
-          element => element.placeType === 'kids activity',
-        ),
+        placeResults: placeLabelsAndUrlArray,
         activityShouldbeIndoors: activityShouldbeIndoors,
       });
     } catch (error) {
@@ -408,17 +424,12 @@ class App extends Component {
                   <br />
                   Drag the map to update search results
                 </CardText>
+                <div className='spacer' />
                 <CardTable
                   cardId='kids-activity-results-card'
-                  cardText='Kids Activity Results'
+                  cardText='Results'
                   tableId='kids-activity-results-table'
-                  placeResultsArray={this.state.kidsActivityResults}
-                />
-                <CardTable
-                  cardId='cafe-results-card'
-                  cardText='Cafe Results'
-                  tableId='cafe-results-table'
-                  placeResultsArray={this.state.cafeResults}
+                  placeResultsArray={this.state.placeResults}
                 />
               </CardBody>
             </Card>

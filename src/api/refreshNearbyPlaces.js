@@ -27,14 +27,18 @@ export async function refreshNearbyPlaces(
     service,
   );
 
-  return getCafesArray(kidsPlacesArray, service, travelMethod).then(
-    limitedCafePlacesArray => {
-      const flattenedPlacesArray = kidsPlacesArray.concat(
-        ...limitedCafePlacesArray,
-      );
-      return Promise.resolve(flattenedPlacesArray);
-    },
-  );
+  return getCafesArray(kidsPlacesArray, service, travelMethod).then(limitedCafePlacesArray => {
+    let flattenedPlacesArray = [];
+    kidsPlacesArray.forEach((kidsPlace, index) => {
+      console.log(limitedCafePlacesArray[index]);
+      flattenedPlacesArray[index] = {
+        kidsPlace: kidsPlace,
+        cafe: limitedCafePlacesArray[index][0],
+      };
+    });
+    console.log(flattenedPlacesArray);
+    return Promise.resolve(flattenedPlacesArray);
+  });
 }
 
 export async function getKidsPlacesArray(
@@ -43,9 +47,7 @@ export async function getKidsPlacesArray(
   searchRadius,
   service,
 ) {
-  let kidsActivityQuery = activityShouldBeIndoors
-    ? 'indoor play center'
-    : 'playground';
+  let kidsActivityQuery = activityShouldBeIndoors ? 'indoor play center' : 'playground';
   const kidsActivityRequest = new MapSearchRequest(
     kidsActivityQuery,
     centerPoint,
@@ -53,15 +55,9 @@ export async function getKidsPlacesArray(
     'kids activity',
   );
 
-  const kidsActivityPlaceArray = await getPlacesList(
-    service,
-    kidsActivityRequest,
-  );
+  const kidsActivityPlaceArray = await getPlacesList(service, kidsActivityRequest);
 
-  const highRatedKidsPlacesArray = filterOutLowRatedPlaces(
-    kidsActivityPlaceArray,
-    4.0,
-  );
+  const highRatedKidsPlacesArray = filterOutLowRatedPlaces(kidsActivityPlaceArray, 4.0);
   // Because Google Maps' MapSearchRequest() does not strictly use searchRadius when supplied
   // we have to do our own test to filter out places not within our user-defined radius
   const withinRadiusKidsPlacesArray = checkPlaceIsWithinRadius(
@@ -73,11 +69,7 @@ export async function getKidsPlacesArray(
   return limitNumberOfPlaces(sortedKidsPlacesArray, 5);
 }
 
-export async function getCafesArray(
-  limitedKidsPlacesArray,
-  service,
-  travelMethod,
-) {
+export async function getCafesArray(limitedKidsPlacesArray, service, travelMethod) {
   const cafeQuery = 'kid friendly coffee shop'; // Google Maps text query for cafes
   // shorten distance from activity to cafe if travel method is 'walk'
   const searchRadiusInMeters = travelMethod === 'walk' ? '500' : '1000';
@@ -101,6 +93,12 @@ export async function getCafesArray(
       );
       const sortedCafesArray = sortByRating(withinRadiusCafesArray);
       const topRatedCafe = limitNumberOfPlaces(sortedCafesArray, 1);
+      if (topRatedCafe.length === 0) {
+        topRatedCafe[0] = {
+          name: 'No high-rated Cafe nearby',
+          rating: '-',
+        };
+      }
       resolve(topRatedCafe);
     });
   });
@@ -113,28 +111,19 @@ export function filterOutLowRatedPlaces(flattenedPlacesArray, lowestRating) {
   return flattenedPlacesArray.filter(place => place.rating >= lowestRating);
 }
 
-export function checkPlaceIsWithinRadius(
-  centerPoint,
-  searchRadius,
-  highRatedKidsPlacesArray,
-) {
+export function checkPlaceIsWithinRadius(centerPoint, searchRadius, highRatedKidsPlacesArray) {
   // Converts radius in metres to distance in lat/lng
   // source: https://gis.stackexchange.com/questions/2951/algorithm-for-offsetting-a-latitude-longitude-by-some-amount-of-meters
-  const searchRadiusInLatDegrees =
-    ((parseInt(searchRadius) / 6378137) * 180) / Math.PI; // 0.00898315284 @ 1000m
+  const searchRadiusInLatDegrees = ((parseInt(searchRadius) / 6378137) * 180) / Math.PI; // 0.00898315284 @ 1000m
   const searchRadiusInLngDegrees =
-    (parseInt(searchRadius) /
-      (6378137 * Math.cos(Math.PI * (centerPoint.lat / 180)))) *
+    (parseInt(searchRadius) / (6378137 * Math.cos(Math.PI * (centerPoint.lat / 180)))) *
     (180 / Math.PI); // 0.01131487697 @ 1000m
 
   return highRatedKidsPlacesArray.filter(place => {
     return (
-      place.geometry.location.lat() <
-        centerPoint.lat + searchRadiusInLatDegrees &&
-      place.geometry.location.lat() >
-        centerPoint.lat - searchRadiusInLatDegrees &&
-      place.geometry.location.lng() <
-        centerPoint.lng + searchRadiusInLngDegrees &&
+      place.geometry.location.lat() < centerPoint.lat + searchRadiusInLatDegrees &&
+      place.geometry.location.lat() > centerPoint.lat - searchRadiusInLatDegrees &&
+      place.geometry.location.lng() < centerPoint.lng + searchRadiusInLngDegrees &&
       place.geometry.location.lng() > centerPoint.lng - searchRadiusInLngDegrees
     );
   });
@@ -144,14 +133,10 @@ function sortByRating(filteredPlacesArray) {
   return filteredPlacesArray.sort((a, b) => b.rating - a.rating);
 }
 
-export function limitNumberOfPlaces(sortedKidsPlacesArray, limit) {
+export function limitNumberOfPlaces(sortedPlacesArray, limit) {
   // Limits number of results per type to 'limit'
-  return sortedKidsPlacesArray
+  return sortedPlacesArray
     .filter(place => place.placeType === 'cafe')
     .slice(0, limit)
-    .concat(
-      sortedKidsPlacesArray
-        .filter(place => place.placeType === 'kids activity')
-        .slice(0, limit),
-    );
+    .concat(sortedPlacesArray.filter(place => place.placeType === 'kids activity').slice(0, limit));
 }

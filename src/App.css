@@ -6,12 +6,6 @@ html {
   font-size: calc(1em + 1vw);
 }
 
-h2 {
-  font-size: 0.1rem;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell,
-    'Open Sans', 'Helvetica Neue', sans-serif;
-}
-
 p.card-text {
   margin-bottom: 0.35rem;
 }
@@ -57,6 +51,13 @@ p.card-text {
   font-size: 0.75rem;
 }
 
+.table-title {
+  font-size: 1rem;
+  font-weight: bold;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell,
+    'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
 .results-table-body {
   padding: 0 !important;
 }
@@ -76,8 +77,20 @@ p.card-text {
 
 .table th,
 .table td {
-  font-size: 0.5rem;
+  font-size: 0.65rem;
   padding: 0.2rem !important;
+}
+
+.green-bg {
+  color: rgba(9, 168, 9, 0.842);
+}
+
+.red-bg {
+  color: rgba(206, 32, 32, 0.829);
+}
+
+.blank-row {
+  height: 0.75rem;
 }
 
 .button {
@@ -98,6 +111,10 @@ p.card-text {
 
 .form-control.form-control {
   font-size: 0.75rem;
+}
+
+.spacer {
+  height: 2rem;
 }
 
 #proximityMinutesInputBox {

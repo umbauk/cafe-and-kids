@@ -22,15 +22,19 @@ const ResultsTable = ({ placeResultsArray }) => (
   <Table borderless>
     <thead>
       <tr>
-        <th>Label</th>
+        <th>
+          <center>Label</center>
+        </th>
         <th>Place name</th>
-        <th>Rating</th>
+        <th>
+          <center>Rating</center>
+        </th>
       </tr>
     </thead>
     <tbody>
       {placeResultsArray.map(place => [
         <tr key={place.kidsPlace.label}>
-          <th scope='row' className='green-bg'>
+          <th scope='row' className='green-text'>
             <center>{place.kidsPlace.label}</center>
           </th>
           <td>
@@ -43,7 +47,7 @@ const ResultsTable = ({ placeResultsArray }) => (
           </td>
         </tr>,
         <tr key={place.cafe.label}>
-          <th scope='row' className='red-bg'>
+          <th scope='row' className='red-text'>
             <center>{place.cafe.label}</center>
           </th>
           <td>
@@ -112,6 +116,12 @@ class App extends Component {
         lng: -6.259674,
       },
       zoom,
+      fullscreenControl: false,
+      streetViewControl: false,
+      mapTypeControl: true,
+      mapTypeControlOptions: {
+        style: google.maps.MapTypeControlStyle.DROPDOWN_MENU,
+      },
     };
     map = new google.maps.Map(this.mapElement, mapConfig);
     map.addListener('dragend', () => this.updateListings());
@@ -165,6 +175,13 @@ class App extends Component {
         placeResults: placeLabelsAndUrlArray,
         activityShouldbeIndoors: activityShouldbeIndoors,
       });
+
+      let bounds = new google.maps.LatLngBounds();
+      for (let i = 0; i < placeMarkersArray.length; i++) {
+        bounds.extend(placeMarkersArray[i].getPosition());
+      }
+
+      this.state.map.fitBounds(bounds);
     } catch (error) {
       console.error(error);
     }

@@ -374,7 +374,7 @@ class App extends Component {
                   <option>90</option>
                 </Input>
                 <br />
-                How will you be travelling?
+                How will you be travelling? <br />
                 <Button
                   className='button transport-btn'
                   color='primary'
@@ -391,6 +391,7 @@ class App extends Component {
                 >
                   Cycle
                 </Button>
+                <br />
                 <Button
                   className='button transport-btn'
                   color='primary'

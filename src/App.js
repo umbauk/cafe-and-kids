@@ -9,6 +9,13 @@ import loadJS from './loadJS.js'; // loads Google Maps API script
 
 /* global google */
 
+const Logo = ({ subtitle }) => (
+  <CardTitle>
+    <div id='cafe-and-kids'>Cafe and Kids</div>
+    {subtitle && <div id='subtitle'>{subtitle}</div>}
+  </CardTitle>
+);
+
 const CardTable = ({ cardId, cardText, tableId, placeResultsArray }) => (
   <Card id={cardId}>
     <CardBody className='results-table-body'>
@@ -178,6 +185,7 @@ class App extends Component {
         activityShouldbeIndoors: activityShouldbeIndoors,
       });
 
+      // Zoom map out to include all markers
       let bounds = new google.maps.LatLngBounds();
       for (let i = 0; i < placeMarkersArray.length; i++) {
         bounds.extend(placeMarkersArray[i].getPosition());
@@ -309,10 +317,7 @@ class App extends Component {
           {!this.state.eventDate && (
             <Card id='welcome-card'>
               <CardBody>
-                <CardTitle>
-                  <div id='cafe-and-kids'>Cafe and Kids</div>
-                  <div id='subtitle'>Find great playgrounds near great coffee!</div>
-                </CardTitle>
+                <Logo subtitle='Find great playgrounds near great coffee!' />
                 <CardText>When would you like to do your family activity?</CardText>
                 <Button
                   className='button date-btn'
@@ -336,9 +341,7 @@ class App extends Component {
           {this.state.eventDate && !this.state.location && (
             <Card id='welcome-card'>
               <CardBody>
-                <CardTitle>
-                  <div id='cafe-and-kids'>Cafe and Kids</div>
-                </CardTitle>
+                <Logo />
                 <CardText>Where should it be near?</CardText>
                 <Input
                   type='text'
@@ -370,9 +373,7 @@ class App extends Component {
           {this.state.eventDate && this.state.location && !this.state.travelMethod && (
             <Card id='welcome-card'>
               <CardBody>
-                <CardTitle>
-                  <div id='cafe-and-kids'>Cafe and Kids</div>
-                </CardTitle>
+                <Logo />
                 <CardText>
                   How many <b>minutes</b> should it take to get there?
                 </CardText>
@@ -434,9 +435,7 @@ class App extends Component {
           this.state.travelMethod && this.state.loading && (
             <Card id='welcome-card'>
               <CardBody>
-                <CardTitle>
-                  <div id='cafe-and-kids'>Cafe and Kids</div>
-                </CardTitle>
+                <Logo />
                 <CardText>
                   {this.state.activityShouldbeIndoors
                     ? `Weather is going to be ${this.state.activityShouldbeIndoors} to be outdoors. Returning Indoor options.`

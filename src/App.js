@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Card, CardText, CardBody, CardTitle, Button, Input, Table } from 'reactstrap';
+import { Card, CardText, CardBody, CardTitle, Button, Input, Table, Spinner } from 'reactstrap';
 import './App.css';
 import { getPlacesAndUpdateListings } from './api/getPlacesAndUpdateListings';
 import { getCurrentLocation } from './api/getCurrentLocation';
@@ -88,6 +88,7 @@ class App extends Component {
       searchRadius: null,
       activityShouldbeIndoors: null,
       travelMinutes: 20,
+      loading: false,
     };
 
     this.initMap = this.initMap.bind(this);
@@ -138,6 +139,7 @@ class App extends Component {
   async updateListings(searchRadius) {
     try {
       let placeMarkersArray, placeLabelsAndUrlArray, activityShouldbeIndoors;
+      this.state.loading = true;
 
       // clear markers
       this.state.markers.forEach(marker => {
@@ -182,6 +184,7 @@ class App extends Component {
       }
 
       this.state.map.fitBounds(bounds);
+      this.setState({ loading: false });
     } catch (error) {
       console.error(error);
     }
@@ -330,7 +333,6 @@ class App extends Component {
               </CardBody>
             </Card>
           )}
-
           {this.state.eventDate && !this.state.location && (
             <Card id='welcome-card'>
               <CardBody>
@@ -365,7 +367,6 @@ class App extends Component {
               </CardBody>
             </Card>
           )}
-
           {this.state.eventDate && this.state.location && !this.state.travelMethod && (
             <Card id='welcome-card'>
               <CardBody>
@@ -429,7 +430,26 @@ class App extends Component {
             </Card>
           )}
 
-          {this.state.travelMethod && (
+          {// Show spinner while results are loading
+          this.state.travelMethod && this.state.loading && (
+            <Card id='welcome-card'>
+              <CardBody>
+                <CardTitle>
+                  <div id='cafe-and-kids'>Cafe and Kids</div>
+                </CardTitle>
+                <CardText>
+                  {this.state.activityShouldbeIndoors
+                    ? `Weather is going to be ${this.state.activityShouldbeIndoors} to be outdoors. Returning Indoor options.`
+                    : 'Weather is going to be fine for outdoor play!'}
+                  <br />
+                  Drag the map to update search results
+                </CardText>
+                <div className='spacer' />
+                <Spinner color='primary' />
+              </CardBody>
+            </Card>
+          )}
+          {this.state.travelMethod && !this.state.loading && (
             <Card id='welcome-card'>
               <CardBody>
                 <CardTitle>

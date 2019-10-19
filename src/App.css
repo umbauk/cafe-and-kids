@@ -3,7 +3,7 @@
 }
 
 html {
-  font-size: 16px;
+  font-size: 18px;
 }
 
 p.card-text {
@@ -42,13 +42,13 @@ p.card-text {
   #map-element {
     height: 55vh;
     width: 100%;
-    top: 0vh;
+    top: 0%;
     float: left;
   }
 
   #cardtable-container {
     position: absolute;
-    top: 55%;
+    top: 55vh;
     left: 0%;
     width: 100%;
     height: auto;

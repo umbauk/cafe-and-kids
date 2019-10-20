@@ -1,5 +1,17 @@
-import React, { Component } from 'react';
-import { Card, CardText, CardBody, CardTitle, Button, Input, Table, Spinner } from 'reactstrap';
+import React, { Component, useState } from 'react';
+import {
+  Card,
+  CardText,
+  CardBody,
+  CardTitle,
+  Button,
+  Input,
+  Table,
+  Spinner,
+  Popover,
+  PopoverHeader,
+  PopoverBody,
+} from 'reactstrap';
 import './App.css';
 import { getPlacesAndUpdateListings } from './api/getPlacesAndUpdateListings';
 import { getCurrentLocation } from './api/getCurrentLocation';
@@ -11,10 +23,41 @@ import loadJS from './loadJS.js'; // loads Google Maps API script
 
 const Logo = ({ subtitle }) => (
   <CardTitle>
-    <div id='cafe-and-kids'>Cafe and Kids</div>
+    <div id='cafe-and-kids'>
+      <a href='/'>Cafe and Kids</a>
+    </div>
     {subtitle && <div id='subtitle'>{subtitle}</div>}
   </CardTitle>
 );
+
+const About = props => {
+  const [popoverOpen, setPopoverOpen] = useState(false);
+
+  const toggle = () => setPopoverOpen(!popoverOpen);
+
+  return (
+    <div>
+      <Button id='about' type='button'>
+        About
+      </Button>
+      <Popover placement='auto' trigger='focus' isOpen={popoverOpen} target='about' toggle={toggle}>
+        <PopoverHeader>About</PopoverHeader>
+        <PopoverBody>
+          cafeandkids.com was designed and built by Darren Greenfield as a project to help him learn
+          to code. It solved a problem he constantly had: what to do with his two young girls to
+          keep them happy and where to find good coffee to keep him happy!{' '}
+          <div className='spacer' />
+          You can read more about him in his{' '}
+          <a href='https://medium.com/@darren.g' target='_blank' rel='noopener noreferrer'>
+            Medium blog posts
+          </a>{' '}
+          or contact him at{' '}
+          <a href='mailto:darren.greenfield@gmail.com'>darren.greenfield@gmail.com</a>
+        </PopoverBody>
+      </Popover>
+    </div>
+  );
+};
 
 const CardTable = ({ cardId, cardText, tableId, placeResultsArray }) => (
   <Card id={cardId}>
@@ -335,6 +378,7 @@ class App extends Component {
                 >
                   Tomorrow
                 </Button>
+                <About />
               </CardBody>
             </Card>
           )}
@@ -366,6 +410,14 @@ class App extends Component {
                   name='useCurrentLocation'
                 >
                   Use current location
+                </Button>
+                <Button
+                  className='button'
+                  color='primary'
+                  onClick={this.locationBtnClicked}
+                  name='useCurrentLocation'
+                >
+                  Back
                 </Button>
               </CardBody>
             </Card>

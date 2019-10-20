@@ -351,6 +351,23 @@ class App extends Component {
     this.setState({ travelMinutes: value });
   };
 
+  backBtnClicked = evt => {
+    // check what 'page' we're on and then reset variables to previous page
+    if (this.state.eventDate && !this.state.location) {
+      this.setState({
+        eventDate: null,
+      });
+    } else if (this.state.eventDate && this.state.location && !this.state.travelMethod) {
+      this.setState({
+        location: null,
+      });
+    } else if (this.state.travelMethod) {
+      this.setState({
+        travelMethod: null,
+      });
+    }
+  };
+
   render() {
     return (
       <div id='parent-window'>
@@ -413,9 +430,9 @@ class App extends Component {
                 </Button>
                 <Button
                   className='button'
-                  color='primary'
-                  onClick={this.locationBtnClicked}
-                  name='useCurrentLocation'
+                  color='secondary'
+                  onClick={this.backBtnClicked}
+                  name='backButton'
                 >
                   Back
                 </Button>
@@ -479,6 +496,14 @@ class App extends Component {
                 >
                   Public transport
                 </Button>
+                <Button
+                  className='button'
+                  color='secondary'
+                  onClick={this.backBtnClicked}
+                  name='backButton'
+                >
+                  Back
+                </Button>
               </CardBody>
             </Card>
           )}
@@ -520,6 +545,14 @@ class App extends Component {
                   tableId='kids-activity-results-table'
                   placeResultsArray={this.state.placeResults}
                 />
+                <Button
+                  className='button'
+                  color='secondary'
+                  onClick={this.backBtnClicked}
+                  name='backButton'
+                >
+                  Back
+                </Button>
               </CardBody>
             </Card>
           )}

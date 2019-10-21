@@ -530,9 +530,7 @@ class App extends Component {
           {this.state.travelMethod && !this.state.loading && (
             <Card id='welcome-card'>
               <CardBody>
-                <CardTitle>
-                  <div id='cafe-and-kids'>Cafe and Kids</div>
-                </CardTitle>
+                <Logo />
                 <CardText>
                   {this.state.activityShouldbeIndoors
                     ? `Weather is going to be ${this.state.activityShouldbeIndoors} to be outdoors. Returning Indoor options.`

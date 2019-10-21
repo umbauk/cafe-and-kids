@@ -30,13 +30,11 @@ export async function refreshNearbyPlaces(
   return getCafesArray(kidsPlacesArray, service, travelMethod).then(limitedCafePlacesArray => {
     let flattenedPlacesArray = [];
     kidsPlacesArray.forEach((kidsPlace, index) => {
-      console.log(limitedCafePlacesArray[index]);
       flattenedPlacesArray[index] = {
         kidsPlace: kidsPlace,
         cafe: limitedCafePlacesArray[index][0],
       };
     });
-    console.log(flattenedPlacesArray);
     return Promise.resolve(flattenedPlacesArray);
   });
 }

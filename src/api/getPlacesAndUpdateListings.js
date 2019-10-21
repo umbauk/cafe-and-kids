@@ -40,6 +40,5 @@ export async function getPlacesAndUpdateListings(
   [placeAndLabelsArray, markerArray] = addMarkersToMap(filteredPlacesArray, map);
   let placeLabelsAndUrlArray = await getPlaceUrl(placeAndLabelsArray);
   // if weather is too bad to be outdoors returns why, else returns false
-  console.log(placeLabelsAndUrlArray);
   return [placeLabelsAndUrlArray, markerArray, activityShouldBeIndoors];
 }

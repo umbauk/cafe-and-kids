@@ -360,6 +360,8 @@ class App extends Component {
     } else if (this.state.eventDate && this.state.location && !this.state.travelMethod) {
       this.setState({
         location: null,
+        locationCoords: null,
+        autoCompleteAddedToTextBox: false,
       });
     } else if (this.state.travelMethod) {
       this.setState({

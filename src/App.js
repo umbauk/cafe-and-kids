@@ -40,7 +40,13 @@ const About = props => {
       <Button id='about' type='button'>
         About
       </Button>
-      <Popover placement='auto' trigger='focus' isOpen={popoverOpen} target='about' toggle={toggle}>
+      <Popover
+        placement='auto'
+        trigger='legacy'
+        isOpen={popoverOpen}
+        target='about'
+        toggle={toggle}
+      >
         <PopoverHeader>About</PopoverHeader>
         <PopoverBody>
           cafeandkids.com was designed and built by Darren Greenfield as a project to help him learn
@@ -51,7 +57,11 @@ const About = props => {
           <a href='https://medium.com/@darren.g' target='_blank' rel='noopener noreferrer'>
             Medium blog posts
           </a>{' '}
-          or contact him at{' '}
+          , check out his personal website at
+          <a href='https://darrengreenfield.com' target='_blank' rel='noopener noreferrer'>
+            darrengreenfield.com
+          </a>
+          , or contact him at{' '}
           <a href='mailto:darren.greenfield@gmail.com'>darren.greenfield@gmail.com</a>
         </PopoverBody>
       </Popover>

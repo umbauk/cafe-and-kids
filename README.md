@@ -4,13 +4,13 @@
 
 # Cafe and Kids
 
-### About the Project 🔘
+### About the Project 
 
 - **Cafe and Kids** is an app to help parents find great playgrounds near great coffee shops. It is a single page, front-end only app using HTML, CSS, JavaScript and React. 
 - It uses Google Maps API and the OpenWeather API. 
 - The app is live for users at https://cafeandkids.com (hosted on a Google Cloud Kubernetes cluster)
 
-### Installation 🔮
+### Installation 
 
 1. Clone the repository.
 

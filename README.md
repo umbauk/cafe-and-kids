@@ -1,5 +1,5 @@
 <p align="center">
-<img src="https://raw.githubusercontent.com/umbauk/cafe-and-kids/public/android-chrome-512x512.png" height="20px">
+<img src="https://github.com/umbauk/cafe-and-kids/public/android-chrome-512x512.png" height="20px">
 </p>
 
 # Cafe and Kids

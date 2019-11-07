@@ -17,23 +17,17 @@ exports[`App matches initial snapshot 1`] = `
       <CardBody
         tag="div"
       >
-        <CardTitle
-          tag="div"
-        >
-          Welcome to 
-          <b>
-            Everyone's Happy
-          </b>
-           - the app for finding days out for the kids AND you!
-        </CardTitle>
+        <Logo
+          subtitle="Find great playgrounds near great coffee!"
+        />
         <CardText
           tag="p"
         >
           When would you like to do your family activity?
         </CardText>
         <Button
-          className="button"
-          color="secondary"
+          className="button date-btn"
+          color="primary"
           name="today"
           onClick={[Function]}
           tag="button"
@@ -41,14 +35,15 @@ exports[`App matches initial snapshot 1`] = `
           Today
         </Button>
         <Button
-          className="button"
-          color="secondary"
+          className="button date-btn"
+          color="primary"
           name="tomorrow"
           onClick={[Function]}
           tag="button"
         >
           Tomorrow
         </Button>
+        <About />
       </CardBody>
     </Card>
   </div>
@@ -80,13 +75,32 @@ exports[`App matches snapshot after user clicks a date for activity 1`] = `
             <div
               className="card-body"
             >
+              <Logo>
+                <CardTitle
+                  tag="div"
+                >
+                  <div
+                    className="card-title"
+                  >
+                    <div
+                      id="cafe-and-kids"
+                    >
+                      <a
+                        href="/"
+                      >
+                        Cafe and Kids
+                      </a>
+                    </div>
+                  </div>
+                </CardTitle>
+              </Logo>
               <CardText
                 tag="p"
               >
                 <p
                   className="card-text"
                 >
-                  Where should it be close to?
+                  Where should it be near?
                 </p>
               </CardText>
               <Input
@@ -109,14 +123,31 @@ exports[`App matches snapshot after user clicks a date for activity 1`] = `
               </Input>
               <Button
                 className="button"
-                color="secondary"
+                color="primary"
+                name="location"
+                onClick={[Function]}
+                tag="button"
+              >
+                <button
+                  aria-label={null}
+                  className="button btn btn-primary"
+                  name="location"
+                  onClick={[Function]}
+                  type="button"
+                >
+                  Submit
+                </button>
+              </Button>
+              <Button
+                className="button"
+                color="primary"
                 name="useCurrentLocation"
                 onClick={[Function]}
                 tag="button"
               >
                 <button
                   aria-label={null}
-                  className="button btn btn-secondary"
+                  className="button btn btn-primary"
                   name="useCurrentLocation"
                   onClick={[Function]}
                   type="button"
@@ -127,18 +158,18 @@ exports[`App matches snapshot after user clicks a date for activity 1`] = `
               <Button
                 className="button"
                 color="secondary"
-                name="location"
+                name="backButton"
                 onClick={[Function]}
                 tag="button"
               >
                 <button
                   aria-label={null}
                   className="button btn btn-secondary"
-                  name="location"
+                  name="backButton"
                   onClick={[Function]}
                   type="button"
                 >
-                  Submit
+                  Back
                 </button>
               </Button>
             </div>
@@ -175,46 +206,88 @@ exports[`App matches snapshot after user selects a location 1`] = `
             <div
               className="card-body"
             >
+              <Logo>
+                <CardTitle
+                  tag="div"
+                >
+                  <div
+                    className="card-title"
+                  >
+                    <div
+                      id="cafe-and-kids"
+                    >
+                      <a
+                        href="/"
+                      >
+                        Cafe and Kids
+                      </a>
+                    </div>
+                  </div>
+                </CardTitle>
+              </Logo>
               <CardText
                 tag="p"
               >
                 <p
                   className="card-text"
                 >
-                  How long should it take to get there (minutes)?
+                  How many 
+                  <b>
+                    minutes
+                  </b>
+                   should it take to get there?
                 </p>
               </CardText>
               <Input
-                id="proximityMinutesTextBox"
+                id="proximityMinutesInputBox"
                 name="proximityMinutes"
                 onChange={[Function]}
-                placeholder=""
-                spellCheck="false"
-                type="text"
+                type="select"
                 value=""
               >
-                <input
+                <select
                   className="form-control"
-                  id="proximityMinutesTextBox"
+                  id="proximityMinutesInputBox"
                   name="proximityMinutes"
                   onChange={[Function]}
-                  placeholder=""
-                  spellCheck="false"
-                  type="text"
                   value=""
-                />
+                >
+                  <option>
+                    10
+                  </option>
+                  <option>
+                    15
+                  </option>
+                  <option>
+                    20
+                  </option>
+                  <option>
+                    30
+                  </option>
+                  <option>
+                    45
+                  </option>
+                  <option>
+                    60
+                  </option>
+                  <option>
+                    90
+                  </option>
+                </select>
               </Input>
-              By what method of transport?
+              <br />
+              How will you be travelling? 
+              <br />
               <Button
-                className="button"
-                color="secondary"
+                className="button transport-btn"
+                color="primary"
                 name="walk"
                 onClick={[Function]}
                 tag="button"
               >
                 <button
                   aria-label={null}
-                  className="button btn btn-secondary"
+                  className="button transport-btn btn btn-primary"
                   name="walk"
                   onClick={[Function]}
                   type="button"
@@ -223,15 +296,15 @@ exports[`App matches snapshot after user selects a location 1`] = `
                 </button>
               </Button>
               <Button
-                className="button"
-                color="secondary"
+                className="button transport-btn"
+                color="primary"
                 name="cycle"
                 onClick={[Function]}
                 tag="button"
               >
                 <button
                   aria-label={null}
-                  className="button btn btn-secondary"
+                  className="button transport-btn btn btn-primary"
                   name="cycle"
                   onClick={[Function]}
                   type="button"
@@ -239,16 +312,17 @@ exports[`App matches snapshot after user selects a location 1`] = `
                   Cycle
                 </button>
               </Button>
+              <br />
               <Button
-                className="button"
-                color="secondary"
+                className="button transport-btn"
+                color="primary"
                 name="car"
                 onClick={[Function]}
                 tag="button"
               >
                 <button
                   aria-label={null}
-                  className="button btn btn-secondary"
+                  className="button transport-btn btn btn-primary"
                   name="car"
                   onClick={[Function]}
                   type="button"
@@ -257,20 +331,37 @@ exports[`App matches snapshot after user selects a location 1`] = `
                 </button>
               </Button>
               <Button
-                className="button"
-                color="secondary"
+                className="button transport-btn"
+                color="primary"
                 name="publicTransport"
                 onClick={[Function]}
                 tag="button"
               >
                 <button
                   aria-label={null}
-                  className="button btn btn-secondary"
+                  className="button transport-btn btn btn-primary"
                   name="publicTransport"
                   onClick={[Function]}
                   type="button"
                 >
                   Public transport
+                </button>
+              </Button>
+              <Button
+                className="button"
+                color="secondary"
+                name="backButton"
+                onClick={[Function]}
+                tag="button"
+              >
+                <button
+                  aria-label={null}
+                  className="button btn btn-secondary"
+                  name="backButton"
+                  onClick={[Function]}
+                  type="button"
+                >
+                  Back
                 </button>
               </Button>
             </div>
@@ -293,79 +384,73 @@ exports[`App matches snapshot after user selects distance and travel method 1`] 
     <div
       id="cardtable-container"
     >
-      <div
-        id="cardTable-container"
+      <Card
+        id="welcome-card"
+        tag="div"
       >
-        Weather is going to be fine for outdoor play!
-        <CardTable
-          cardId="kids-activity-results-card"
-          cardText="Kids Activity Results"
-          placeResultsArray=""
-          tableId="kids-activity-results-table"
+        <div
+          className="card"
+          id="welcome-card"
         >
-          <Card
-            id="kids-activity-results-card"
+          <CardBody
             tag="div"
           >
             <div
-              className="card"
-              id="kids-activity-results-card"
+              className="card-body"
             >
-              <CardBody
+              <Logo>
+                <CardTitle
+                  tag="div"
+                >
+                  <div
+                    className="card-title"
+                  >
+                    <div
+                      id="cafe-and-kids"
+                    >
+                      <a
+                        href="/"
+                      >
+                        Cafe and Kids
+                      </a>
+                    </div>
+                  </div>
+                </CardTitle>
+              </Logo>
+              <CardText
+                tag="p"
+              >
+                <p
+                  className="card-text"
+                >
+                  Weather is going to be fine for outdoor play!
+                  <br />
+                  Drag the map to update search results
+                </p>
+              </CardText>
+              <div
+                className="spacer"
+              />
+              <Spinner
+                color="primary"
                 tag="div"
+                type="border"
               >
                 <div
-                  className="card-body"
+                  className="spinner-border text-primary"
+                  role="status"
                 >
-                  <CardText
-                    tag="p"
+                  <span
+                    className="sr-only"
                   >
-                    <p
-                      className="card-text"
-                    >
-                      Kids Activity Results
-                    </p>
-                  </CardText>
+                    Loading...
+                  </span>
                 </div>
-              </CardBody>
+              </Spinner>
             </div>
-          </Card>
-        </CardTable>
-        <CardTable
-          cardId="cafe-results-card"
-          cardText="Cafe Results"
-          placeResultsArray=""
-          tableId="cafe-results-table"
-        >
-          <Card
-            id="cafe-results-card"
-            tag="div"
-          >
-            <div
-              className="card"
-              id="cafe-results-card"
-            >
-              <CardBody
-                tag="div"
-              >
-                <div
-                  className="card-body"
-                >
-                  <CardText
-                    tag="p"
-                  >
-                    <p
-                      className="card-text"
-                    >
-                      Cafe Results
-                    </p>
-                  </CardText>
-                </div>
-              </CardBody>
-            </div>
-          </Card>
-        </CardTable>
-      </div>
+          </CardBody>
+        </div>
+      </Card>
     </div>
   </div>
 </App>

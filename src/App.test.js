@@ -16,6 +16,9 @@ const mapMock = {
   },
 };
 
+// Mocks <About> to remove Popover which causes issues with target 'about' not being found on DOM
+jest.mock('./reactComponents');
+
 //console.log(wrapper.find('button').first().text());
 
 describe('App', () => {
